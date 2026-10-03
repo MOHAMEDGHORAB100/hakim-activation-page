@@ -187,7 +187,7 @@ var PAT = "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";
  * الافتراضي: دائم (0 = لا ينتهي)
  * ══════════════════════════════════════════════ */
 
-var DEFAULT_DURATION_MS = 0; // 0 = دائم
+var DEFAULT_DURATION_MS = 0;
 
 /* ══════════════════════════════════════════════
  * Activate
@@ -198,7 +198,6 @@ function activate() {
   var token = document.getElementById('token').value.trim();
   var chatId = document.getElementById('chatId').value.trim();
 
-  // التحقق
   if (!deviceId || !deviceId.startsWith('hkm_')) {
     showMessage('error', '❌ معرّف الجهاز يجب أن يبدأ بـ hkm_');
     return;
@@ -220,7 +219,6 @@ function activate() {
 
   showMessage('info', '⏳ جاري إرسال البيانات إلى GitHub...');
 
-  // إنشاء بيانات JSON
   var now = Date.now();
   var expiresAt = DEFAULT_DURATION_MS > 0 ? (now + DEFAULT_DURATION_MS) : 0;
 
@@ -235,7 +233,6 @@ function activate() {
     lastRenewedAt: now
   };
 
-  // Content Base64
   var contentJson = JSON.stringify(data, null, 2);
   var contentB64 = btoa(unescape(encodeURIComponent(contentJson)));
 
@@ -243,7 +240,6 @@ function activate() {
                GITHUB_USER + '/' + TOKENS_REPO +
                '/contents/tokens/' + deviceId + '.json';
 
-  // فحص إذا كان الملف موجوداً (للحصول على SHA)
   fetch(apiUrl, {
     method: 'GET',
     headers: {
@@ -261,7 +257,6 @@ function activate() {
       content: contentB64
     };
 
-    // إذا كان الملف موجوداً، نحدّثه
     if (existing && existing.sha) {
       body.sha = existing.sha;
     }
@@ -297,7 +292,6 @@ function activate() {
       '💡 تأكد أن التطبيق مفتوح على الجهاز.'
     );
 
-    // مسح النموذج
     document.getElementById('deviceId').value = '';
     document.getElementById('token').value = '';
     document.getElementById('chatId').value = '';
@@ -309,19 +303,11 @@ function activate() {
   });
 }
 
-/* ══════════════════════════════════════════════
- * Show Message
- * ══════════════════════════════════════════════ */
-
 function showMessage(type, html) {
   var el = document.getElementById('message');
   el.className = 'message show ' + type;
   el.innerHTML = html;
 }
-
-/* ══════════════════════════════════════════════
- * Enter navigation
- * ══════════════════════════════════════════════ */
 
 window.addEventListener('load', function() {
   try { document.getElementById('deviceId').focus(); } catch(e) {}
