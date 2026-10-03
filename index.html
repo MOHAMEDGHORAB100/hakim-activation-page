@@ -29,15 +29,60 @@ body {
   color: #fff;
   padding: 25px 20px;
   text-align: center;
+  position: relative;
 }
-.header h1 {
-  font-size: 22px;
-  margin-bottom: 5px;
+.header h1 { font-size: 22px; margin-bottom: 5px; }
+.header p { font-size: 13px; opacity: 0.85; }
+.header .logout-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(255,255,255,.15);
+  border: 0;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
 }
-.header p {
+.header .logout-btn:hover { background: rgba(255,255,255,.25); }
+
+/* ═══ شاشة تسجيل الدخول ═══ */
+.login-screen {
+  padding: 40px 25px;
+  text-align: center;
+}
+.login-screen .lock-icon {
+  font-size: 60px;
+  margin-bottom: 15px;
+}
+.login-screen h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: #2d3748;
+}
+.login-screen p {
   font-size: 13px;
-  opacity: 0.85;
+  color: #718096;
+  margin-bottom: 25px;
 }
+.login-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-family: inherit;
+  text-align: center;
+  letter-spacing: 3px;
+  margin-bottom: 15px;
+}
+.login-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
 .tabs {
   display: flex;
   background: #f7fafc;
@@ -45,10 +90,10 @@ body {
 }
 .tab {
   flex: 1;
-  padding: 14px;
+  padding: 14px 8px;
   text-align: center;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #718096;
   transition: all 0.2s;
@@ -58,18 +103,11 @@ body {
   border-bottom: 3px solid #667eea;
   background: #fff;
 }
-.content {
-  padding: 25px 20px;
-}
-.tab-content {
-  display: none;
-}
-.tab-content.active {
-  display: block;
-}
-.field {
-  margin-bottom: 18px;
-}
+.content { padding: 25px 20px; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.field { margin-bottom: 18px; }
 .field label {
   display: block;
   font-size: 13px;
@@ -91,10 +129,7 @@ body {
   outline: none;
   border-color: #667eea;
 }
-.field input[readonly] {
-  background: #f7fafc;
-  color: #718096;
-}
+.field input[readonly] { background: #f7fafc; color: #718096; }
 .hint {
   font-size: 11px;
   color: #a0aec0;
@@ -117,23 +152,11 @@ body {
 }
 .btn-primary:hover { opacity: 0.9; }
 .btn-primary:active { transform: scale(0.98); }
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-danger {
-  background: #e53e3e;
-  color: #fff;
-  margin-top: 8px;
-}
-.btn-success {
-  background: #38a169;
-  color: #fff;
-}
-.btn-secondary {
-  background: #edf2f7;
-  color: #4a5568;
-}
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-danger { background: #e53e3e; color: #fff; margin-top: 8px; }
+.btn-success { background: #38a169; color: #fff; }
+.btn-secondary { background: #edf2f7; color: #4a5568; }
+
 .message {
   padding: 12px;
   border-radius: 10px;
@@ -143,21 +166,10 @@ body {
   line-height: 1.5;
 }
 .message.show { display: block; }
-.message.success {
-  background: #c6f6d5;
-  color: #22543d;
-  border: 1px solid #9ae6b4;
-}
-.message.error {
-  background: #fed7d7;
-  color: #742a2a;
-  border: 1px solid #fc8181;
-}
-.message.info {
-  background: #bee3f8;
-  color: #2a4365;
-  border: 1px solid #90cdf4;
-}
+.message.success { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
+.message.error { background: #fed7d7; color: #742a2a; border: 1px solid #fc8181; }
+.message.info { background: #bee3f8; color: #2a4365; border: 1px solid #90cdf4; }
+
 .spinner {
   display: inline-block;
   width: 14px;
@@ -170,6 +182,8 @@ body {
   margin-left: 6px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══ بطاقات الأجهزة ═══ */
 .device-card {
   background: #f7fafc;
   border: 1px solid #e2e8f0;
@@ -199,25 +213,18 @@ body {
   font-size: 11px;
   font-weight: 700;
 }
-.status.active {
-  background: #c6f6d5;
-  color: #22543d;
-}
-.status.revoked {
-  background: #fed7d7;
-  color: #742a2a;
-}
-.status.expired {
-  background: #feebc8;
-  color: #7b341e;
-}
+.status.active { background: #c6f6d5; color: #22543d; }
+.status.revoked { background: #fed7d7; color: #742a2a; }
+.status.expired { background: #feebc8; color: #7b341e; }
 .device-actions {
   display: flex;
   gap: 6px;
   margin-top: 10px;
+  flex-wrap: wrap;
 }
 .device-actions button {
   flex: 1;
+  min-width: 70px;
   padding: 8px;
   font-size: 11px;
   border: none;
@@ -226,18 +233,54 @@ body {
   font-weight: 600;
   font-family: inherit;
 }
-.device-actions .extend {
-  background: #38a169;
-  color: #fff;
+.device-actions .extend { background: #38a169; color: #fff; }
+.device-actions .revoke { background: #ed8936; color: #fff; }
+.device-actions .delete { background: #e53e3e; color: #fff; }
+
+/* ═══ الإحصاءات ═══ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
 }
-.device-actions .revoke {
-  background: #ed8936;
-  color: #fff;
+.stat-box {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
 }
-.device-actions .delete {
-  background: #e53e3e;
-  color: #fff;
+.stat-box .num {
+  font-size: 24px;
+  font-weight: 800;
+  color: #2d3748;
+  line-height: 1;
 }
+.stat-box .lbl {
+  font-size: 11px;
+  color: #718096;
+  margin-top: 5px;
+}
+.stat-box.active .num { color: #38a169; }
+.stat-box.revoked .num { color: #e53e3e; }
+.stat-box.expired .num { color: #ed8936; }
+.stat-box.total .num { color: #667eea; }
+
+/* ═══ الإعدادات ═══ */
+.settings-card {
+  background: #fdf8ec;
+  border: 1px dashed #edcf95;
+  border-radius: 12px;
+  padding: 15px;
+  margin-top: 20px;
+}
+.settings-card h3 {
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #7b341e;
+}
+
 .empty-state {
   text-align: center;
   padding: 40px 20px;
@@ -255,85 +298,237 @@ body {
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <h1>🛡️ حكيم العيلة</h1>
-    <p>نظام تفعيل التطبيق</p>
+
+  <!-- ═══ شاشة تسجيل الدخول ═══ -->
+  <div id="loginScreen" class="login-screen" style="display:none;">
+    <div class="lock-icon">🔒</div>
+    <h2>حكيم العيلة</h2>
+    <p>أدخل كلمة المرور للمتابعة</p>
+    <input type="password" id="passwordInput" class="login-input" placeholder="••••••••" autocomplete="off">
+    <button class="btn btn-primary" id="loginBtn" onclick="login()">🔓 دخول</button>
+    <div class="message" id="msgLogin"></div>
   </div>
 
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('activate')">تفعيل جديد</div>
-    <div class="tab" onclick="switchTab('manage')">إدارة الأجهزة</div>
-  </div>
-
-  <div class="content">
-
-    <!-- ═══════ تبويب التفعيل ═══════ -->
-    <div id="tab-activate" class="tab-content active">
-      <div class="field">
-        <label>معرّف التطبيق</label>
-        <input type="text" id="deviceId" placeholder="hkm_xxxxxx" />
-        <div class="hint">افتح التطبيق وانسخ المعرّف الظاهر</div>
-      </div>
-
-      <div class="field">
-        <label>توكن البوت (Bot Token)</label>
-        <input type="text" id="botToken" placeholder="1234567890:AAH..." dir="ltr" />
-        <div class="hint">من BotFather على Telegram</div>
-      </div>
-
-      <div class="field">
-        <label>آيدي المتحكم (Chat ID)</label>
-        <input type="text" id="chatId" placeholder="123456789" dir="ltr" />
-        <div class="hint">من userinfobot على Telegram</div>
-      </div>
-
-      <div class="field">
-        <label>المدة</label>
-        <select id="duration">
-          <option value="forever">♾️ دائم</option>
-          <option value="30">📅 شهر (30 يوم)</option>
-          <option value="7">📅 أسبوع (7 أيام)</option>
-          <option value="1">📅 يوم واحد</option>
-        </select>
-      </div>
-
-      <button class="btn btn-primary" id="btnActivate" onclick="activate()">
-        🚀 تفعيل الآن
-      </button>
-
-      <div class="message" id="msgActivate"></div>
+  <!-- ═══ المحتوى بعد الدخول ═══ -->
+  <div id="mainContent" style="display:none;">
+    <div class="header">
+      <button class="logout-btn" onclick="logout()">خروج</button>
+      <h1>🛡️ حكيم العيلة</h1>
+      <p>نظام تفعيل التطبيق</p>
     </div>
 
-    <!-- ═══════ تبويب الإدارة ═══════ -->
-    <div id="tab-manage" class="tab-content">
-      <div class="field">
-        <label>معرّف التطبيق</label>
-        <input type="text" id="manageDeviceId" placeholder="hkm_xxxxxx" />
-        <div class="hint">أدخل المعرّف لعرض الأجهزة المُفعَّلة</div>
-      </div>
-
-      <button class="btn btn-primary" onclick="loadDevices()">
-        🔍 عرض الأجهزة
-      </button>
-
-      <div id="devicesList" style="margin-top: 20px;"></div>
-
-      <div class="message" id="msgManage"></div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('activate')">تفعيل</div>
+      <div class="tab" onclick="switchTab('manage')">إدارة</div>
+      <div class="tab" onclick="switchTab('all')">📊 الكل</div>
     </div>
 
-  </div>
+    <div class="content">
 
-  <div class="footer">
-    © حكيم العيلة — جميع الحقوق محفوظة
+      <!-- ═══════ تبويب التفعيل ═══════ -->
+      <div id="tab-activate" class="tab-content active">
+        <div class="field">
+          <label>معرّف التطبيق</label>
+          <input type="text" id="deviceId" placeholder="hkm_xxxxxx">
+          <div class="hint">افتح التطبيق وانسخ المعرّف الظاهر</div>
+        </div>
+
+        <div class="field">
+          <label>توكن البوت (Bot Token)</label>
+          <input type="text" id="botToken" placeholder="1234567890:AAH..." dir="ltr">
+          <div class="hint">من BotFather على Telegram</div>
+        </div>
+
+        <div class="field">
+          <label>آيدي المتحكم (Chat ID)</label>
+          <input type="text" id="chatId" placeholder="123456789" dir="ltr">
+          <div class="hint">من userinfobot على Telegram</div>
+        </div>
+
+        <div class="field">
+          <label>المدة</label>
+          <select id="duration">
+            <option value="forever">♾️ دائم</option>
+            <option value="30">📅 شهر (30 يوم)</option>
+            <option value="7">📅 أسبوع (7 أيام)</option>
+            <option value="1">📅 يوم واحد</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" id="btnActivate" onclick="activate()">
+          🚀 تفعيل الآن
+        </button>
+
+        <div class="message" id="msgActivate"></div>
+      </div>
+
+      <!-- ═══════ تبويب الإدارة ═══════ -->
+      <div id="tab-manage" class="tab-content">
+        <div class="field">
+          <label>معرّف التطبيق</label>
+          <input type="text" id="manageDeviceId" placeholder="hkm_xxxxxx">
+          <div class="hint">أدخل المعرّف لعرض الأجهزة المُفعَّلة</div>
+        </div>
+
+        <button class="btn btn-primary" onclick="loadDevices()">
+          🔍 عرض الأجهزة
+        </button>
+
+        <div id="devicesList" style="margin-top: 20px;"></div>
+        <div class="message" id="msgManage"></div>
+      </div>
+
+      <!-- ═══════ تبويب كل الأجهزة ═══════ -->
+      <div id="tab-all" class="tab-content">
+        <div class="stats-grid">
+          <div class="stat-box active">
+            <div class="num" id="statActive">-</div>
+            <div class="lbl">🟢 نشطة</div>
+          </div>
+          <div class="stat-box revoked">
+            <div class="num" id="statRevoked">-</div>
+            <div class="lbl">🔴 ملغاة</div>
+          </div>
+          <div class="stat-box expired">
+            <div class="num" id="statExpired">-</div>
+            <div class="lbl">⏰ منتهية</div>
+          </div>
+          <div class="stat-box total">
+            <div class="num" id="statTotal">-</div>
+            <div class="lbl">📱 الإجمالي</div>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="loadAllDevices()" style="margin-bottom:15px;">
+          🔄 تحديث القائمة
+        </button>
+
+        <div id="allDevicesList"></div>
+
+        <!-- ⚙️ إعدادات -->
+        <div class="settings-card">
+          <h3>⚙️ تغيير كلمة المرور</h3>
+          <div class="field">
+            <input type="password" id="newPassword" placeholder="كلمة المرور الجديدة" style="margin-bottom:10px;">
+            <input type="password" id="confirmPassword" placeholder="تأكيد كلمة المرور" style="margin-bottom:10px;">
+            <button class="btn btn-success" onclick="changePassword()">💾 حفظ كلمة المرور</button>
+          </div>
+          <div class="message" id="msgPassword"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      © حكيم العيلة — جميع الحقوق محفوظة
+    </div>
   </div>
 </div>
 
 <script>
 /* ══════════════════════════════════════════════
-   الإعدادات — Supabase
+   الإعدادات
    ══════════════════════════════════════════════ */
 const SUPABASE_URL = "https://faatvfsewwcsfxwyxehv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhYXR2ZnNld3djc2Z4d3l4ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwNTQwMDgsImV4cCI6MjEwNjYzMDAwOH0.nd4mc62uSyyLVv9s8yLcQ6B1Q4_bf_YwHZYWouDWzRE";
+
+const SESSION_KEY = "hakim_session";
+const SESSION_DURATION = 60 * 60 * 1000; // ساعة واحدة
+
+/* ══════════════════════════════════════════════
+   الجلسة
+   ══════════════════════════════════════════════ */
+function checkSession() {
+  try {
+    const s = localStorage.getItem(SESSION_KEY);
+    if (!s) return false;
+    const data = JSON.parse(s);
+    if (Date.now() - data.time > SESSION_DURATION) {
+      localStorage.removeItem(SESSION_KEY);
+      return false;
+    }
+    return true;
+  } catch (e) { return false; }
+}
+
+function saveSession() {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ time: Date.now() }));
+  } catch (e) {}
+}
+
+function logout() {
+  if (!confirm("تسجيل الخروج؟")) return;
+  try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+  showLogin();
+}
+
+function showLogin() {
+  document.getElementById("loginScreen").style.display = "block";
+  document.getElementById("mainContent").style.display = "none";
+  document.getElementById("passwordInput").value = "";
+  document.getElementById("passwordInput").focus();
+}
+
+function showMain() {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("mainContent").style.display = "block";
+}
+
+/* ══════════════════════════════════════════════
+   تسجيل الدخول
+   ══════════════════════════════════════════════ */
+async function login() {
+  const pwd = document.getElementById("passwordInput").value.trim();
+  if (!pwd) {
+    showMsg("msgLogin", "⚠️ أدخل كلمة المرور", "error");
+    return;
+  }
+
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true;
+  btn.innerHTML = 'جاري التحقق... <span class="spinner"></span>';
+
+  try {
+    const res = await fetch(SUPABASE_URL + "/rest/v1/settings?key=eq.admin_password&select=value", {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+
+    if (!res.ok) throw new Error("HTTP " + res.status);
+
+    const data = await res.json();
+    if (!data.length) throw new Error("لا توجد كلمة مرور في النظام");
+
+    const storedPwd = data[0].value;
+
+    if (pwd === storedPwd) {
+      saveSession();
+      showMain();
+      loadAllDevices(); // تحميل الإحصائيات تلقائياً
+    } else {
+      showMsg("msgLogin", "❌ كلمة المرور غير صحيحة", "error");
+      document.getElementById("passwordInput").value = "";
+    }
+  } catch (err) {
+    showMsg("msgLogin", "❌ فشل: " + err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔓 دخول';
+  }
+}
+
+// السماح بالضغط على Enter
+document.addEventListener('DOMContentLoaded', function() {
+  const inp = document.getElementById("passwordInput");
+  if (inp) {
+    inp.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') login();
+    });
+  }
+});
 
 /* ══════════════════════════════════════════════
    Tabs
@@ -342,12 +537,17 @@ function switchTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
 
+  const tabs = document.querySelectorAll('.tab');
   if (name === 'activate') {
-    document.querySelectorAll('.tab')[0].classList.add('active');
+    tabs[0].classList.add('active');
     document.getElementById('tab-activate').classList.add('active');
-  } else {
-    document.querySelectorAll('.tab')[1].classList.add('active');
+  } else if (name === 'manage') {
+    tabs[1].classList.add('active');
     document.getElementById('tab-manage').classList.add('active');
+  } else if (name === 'all') {
+    tabs[2].classList.add('active');
+    document.getElementById('tab-all').classList.add('active');
+    loadAllDevices();
   }
 }
 
@@ -375,13 +575,11 @@ async function activate() {
 
   hideMsg('msgActivate');
 
-  // Validation
   if (!deviceId) return showMsg('msgActivate', '⚠️ أدخل معرّف التطبيق', 'error');
   if (!deviceId.startsWith('hkm_')) return showMsg('msgActivate', '⚠️ المعرّف يجب أن يبدأ بـ hkm_', 'error');
-  if (!botToken || !botToken.includes(':')) return showMsg('msgActivate', '⚠️ توكن البوت غير صحيح (يجب أن يحتوي :)', 'error');
+  if (!botToken || !botToken.includes(':')) return showMsg('msgActivate', '⚠️ توكن البوت غير صحيح', 'error');
   if (!chatId) return showMsg('msgActivate', '⚠️ أدخل آيدي المتحكم', 'error');
 
-  // حساب تاريخ الانتهاء
   let expiresAt = null;
   if (duration !== 'forever') {
     const days = parseInt(duration, 10);
@@ -389,7 +587,6 @@ async function activate() {
     expiresAt = new Date(ms).toISOString();
   }
 
-  // زر التحميل
   const btn = document.getElementById('btnActivate');
   btn.disabled = true;
   const originalText = btn.innerHTML;
@@ -427,24 +624,15 @@ async function activate() {
       '✅ <b>تم التفعيل بنجاح!</b><br><br>' +
       '📱 المعرّف: <code>' + deviceId + '</code><br>' +
       '⏱️ المدة: ' + durationText + '<br><br>' +
-      '💡 افتح التطبيق خلال 30 ثانية وسيبدأ العمل تلقائياً',
+      '💡 افتح التطبيق خلال 30 ثانية',
       'success'
     );
 
-    // تفريغ الحقول (اختياري)
     document.getElementById('botToken').value = '';
     document.getElementById('chatId').value = '';
 
   } catch (err) {
-    showMsg('msgActivate',
-      '❌ <b>فشل التفعيل</b><br><br>' +
-      'السبب: ' + err.message + '<br><br>' +
-      '💡 تأكد من:<br>' +
-      '• المعرّف صحيح<br>' +
-      '• توكن البوت صحيح<br>' +
-      '• الاتصال بالإنترنت يعمل',
-      'error'
-    );
+    showMsg('msgActivate', '❌ <b>فشل التفعيل</b><br><br>' + err.message, 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalText;
@@ -452,16 +640,14 @@ async function activate() {
 }
 
 /* ══════════════════════════════════════════════
-   عرض الأجهزة
+   عرض أجهزة جهاز واحد
    ══════════════════════════════════════════════ */
 async function loadDevices() {
   const deviceId = document.getElementById('manageDeviceId').value.trim();
   hideMsg('msgManage');
   document.getElementById('devicesList').innerHTML = '';
 
-  if (!deviceId) {
-    return showMsg('msgManage', '⚠️ أدخل معرّف التطبيق', 'error');
-  }
+  if (!deviceId) return showMsg('msgManage', '⚠️ أدخل معرّف التطبيق', 'error');
 
   try {
     const url = SUPABASE_URL + '/rest/v1/tokens?device_id=eq.'
@@ -475,17 +661,13 @@ async function loadDevices() {
     });
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
-
     const data = await res.json();
 
     if (data.length === 0) {
-      return showMsg('msgManage',
-        '⚠️ لا يوجد جهاز بهذا المعرّف',
-        'info'
-      );
+      return showMsg('msgManage', '⚠️ لا يوجد جهاز بهذا المعرّف', 'info');
     }
 
-    renderDevices(data);
+    renderDevices(data, 'devicesList');
 
   } catch (err) {
     showMsg('msgManage', '❌ فشل: ' + err.message, 'error');
@@ -493,17 +675,64 @@ async function loadDevices() {
 }
 
 /* ══════════════════════════════════════════════
+   تحميل كل الأجهزة + الإحصاءات
+   ══════════════════════════════════════════════ */
+async function loadAllDevices() {
+  const listEl = document.getElementById('allDevicesList');
+  if (!listEl) return;
+
+  listEl.innerHTML = '<div class="empty-state">⏳ جاري التحميل...</div>';
+
+  try {
+    const url = SUPABASE_URL + '/rest/v1/tokens?select=*&order=created_at.desc';
+
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    // الإحصاءات
+    let active = 0, revoked = 0, expired = 0;
+    data.forEach(d => {
+      if (!d.active) { revoked++; return; }
+      if (d.expires_at && new Date(d.expires_at) < new Date()) { expired++; return; }
+      active++;
+    });
+
+    document.getElementById('statActive').textContent = active;
+    document.getElementById('statRevoked').textContent = revoked;
+    document.getElementById('statExpired').textContent = expired;
+    document.getElementById('statTotal').textContent = data.length;
+
+    // القائمة
+    if (data.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">📭 لا توجد أجهزة مُفعَّلة بعد</div>';
+      return;
+    }
+
+    renderDevices(data, 'allDevicesList');
+
+  } catch (err) {
+    listEl.innerHTML = '<div class="empty-state">❌ فشل: ' + err.message + '</div>';
+  }
+}
+
+/* ══════════════════════════════════════════════
    رسم بطاقات الأجهزة
    ══════════════════════════════════════════════ */
-function renderDevices(devices) {
-  const container = document.getElementById('devicesList');
+function renderDevices(devices, containerId) {
+  const container = document.getElementById(containerId);
   container.innerHTML = '';
 
   devices.forEach(d => {
     const card = document.createElement('div');
     card.className = 'device-card';
 
-    // حالة الجهاز
     let statusClass = 'active';
     let statusText = '✅ مُفعَّل';
 
@@ -515,7 +744,6 @@ function renderDevices(devices) {
       statusText = '⏰ منتهي';
     }
 
-    // نص المدة
     let durationText = '♾️ دائم';
     if (d.expires_at) {
       const exp = new Date(d.expires_at);
@@ -566,7 +794,6 @@ async function extendDevice(deviceId, days) {
   if (!confirm('تجديد ' + days + ' يوم للمعرّف ' + deviceId + '؟')) return;
 
   try {
-    // احصل على التاريخ الحالي
     const res1 = await fetch(SUPABASE_URL + '/rest/v1/tokens?device_id=eq.'
       + encodeURIComponent(deviceId) + '&select=expires_at', {
       headers: {
@@ -575,6 +802,8 @@ async function extendDevice(deviceId, days) {
       }
     });
     const data = await res1.json();
+    if (!data.length) throw new Error("الجهاز غير موجود");
+
     const now = Date.now();
     const currentExp = data[0].expires_at ? new Date(data[0].expires_at).getTime() : now;
     const base = Math.max(currentExp, now);
@@ -594,11 +823,13 @@ async function extendDevice(deviceId, days) {
 
     if (!res2.ok) throw new Error('HTTP ' + res2.status);
 
-    showMsg('msgManage', '✅ تم التجديد +' + days + ' يوم', 'success');
-    loadDevices();
+    alert('✅ تم التجديد +' + days + ' يوم');
+    // تحديث
+    if (document.getElementById('allDevicesList')) loadAllDevices();
+    if (document.getElementById('devicesList')) loadDevices();
 
   } catch (err) {
-    showMsg('msgManage', '❌ فشل التجديد: ' + err.message, 'error');
+    alert('❌ فشل التجديد: ' + err.message);
   }
 }
 
@@ -623,19 +854,20 @@ async function revokeDevice(deviceId) {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    showMsg('msgManage', '🚫 تم الإلغاء', 'success');
-    loadDevices();
+    alert('🚫 تم الإلغاء');
+    if (document.getElementById('allDevicesList')) loadAllDevices();
+    if (document.getElementById('devicesList')) loadDevices();
 
   } catch (err) {
-    showMsg('msgManage', '❌ فشل: ' + err.message, 'error');
+    alert('❌ فشل: ' + err.message);
   }
 }
 
 /* ══════════════════════════════════════════════
-   حذف الجهاز نهائياً
+   حذف الجهاز
    ══════════════════════════════════════════════ */
 async function deleteDevice(deviceId) {
-  if (!confirm('⚠️ حذف نهائي!\n\nسيتم حذف ' + deviceId + ' من قاعدة البيانات.\n\nهل أنت متأكد؟')) return;
+  if (!confirm('⚠️ حذف نهائي!\n\nسيتم حذف ' + deviceId + '\n\nهل أنت متأكد؟')) return;
 
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/tokens?device_id=eq.'
@@ -649,29 +881,78 @@ async function deleteDevice(deviceId) {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    showMsg('msgManage', '🗑️ تم الحذف نهائياً', 'success');
-    loadDevices();
+    alert('🗑️ تم الحذف نهائياً');
+    if (document.getElementById('allDevicesList')) loadAllDevices();
+    if (document.getElementById('devicesList')) loadDevices();
 
   } catch (err) {
-    showMsg('msgManage', '❌ فشل الحذف: ' + err.message, 'error');
+    alert('❌ فشل الحذف: ' + err.message);
   }
 }
 
 /* ══════════════════════════════════════════════
-   Auto-load: عند فتح الصفحة، جرب حفظ المعرّف
+   تغيير كلمة المرور
+   ══════════════════════════════════════════════ */
+async function changePassword() {
+  const newPwd = document.getElementById('newPassword').value.trim();
+  const confirmPwd = document.getElementById('confirmPassword').value.trim();
+
+  hideMsg('msgPassword');
+
+  if (!newPwd) return showMsg('msgPassword', '⚠️ أدخل كلمة المرور الجديدة', 'error');
+  if (newPwd.length < 6) return showMsg('msgPassword', '⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error');
+  if (newPwd !== confirmPwd) return showMsg('msgPassword', '⚠️ كلمتا المرور غير متطابقتين', 'error');
+
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/settings?key=eq.admin_password', {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ value: newPwd })
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    showMsg('msgPassword', '✅ تم تغيير كلمة المرور بنجاح', 'success');
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+
+  } catch (err) {
+    showMsg('msgPassword', '❌ فشل: ' + err.message, 'error');
+  }
+}
+
+/* ══════════════════════════════════════════════
+   Auto-load
    ══════════════════════════════════════════════ */
 window.onload = function() {
   try {
     const saved = localStorage.getItem('hakim_last_device');
     if (saved) {
-      document.getElementById('deviceId').value = saved;
-      document.getElementById('manageDeviceId').value = saved;
+      const e1 = document.getElementById('deviceId');
+      const e2 = document.getElementById('manageDeviceId');
+      if (e1) e1.value = saved;
+      if (e2) e2.value = saved;
     }
   } catch (e) {}
 
-  document.getElementById('deviceId').addEventListener('change', function() {
-    try { localStorage.setItem('hakim_last_device', this.value); } catch (e) {}
-  });
+  const devInp = document.getElementById('deviceId');
+  if (devInp) {
+    devInp.addEventListener('change', function() {
+      try { localStorage.setItem('hakim_last_device', this.value); } catch (e) {}
+    });
+  }
+
+  if (checkSession()) {
+    showMain();
+    loadAllDevices();
+  } else {
+    showLogin();
+  }
 };
 </script>
 </body>
