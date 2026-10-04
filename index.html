@@ -83,13 +83,17 @@ body {
   border-color: #667eea;
 }
 
+/* ═══ التابات ═══ */
 .tabs {
   display: flex;
   background: #f7fafc;
   border-bottom: 1px solid #e2e8f0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .tab {
   flex: 1;
+  min-width: 90px;
   padding: 14px 8px;
   text-align: center;
   cursor: pointer;
@@ -97,16 +101,33 @@ body {
   font-weight: 600;
   color: #718096;
   transition: all 0.2s;
+  position: relative;
+  white-space: nowrap;
 }
 .tab.active {
   color: #667eea;
   border-bottom: 3px solid #667eea;
   background: #fff;
 }
+.tab .badge {
+  display: inline-block;
+  background: #e53e3e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-right: 4px;
+  min-width: 16px;
+  text-align: center;
+}
+.tab .badge.hidden { display: none; }
+
 .content { padding: 25px 20px; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
+/* ═══ الحقول ═══ */
 .field { margin-bottom: 18px; }
 .field label {
   display: block;
@@ -135,6 +156,8 @@ body {
   color: #a0aec0;
   margin-top: 4px;
 }
+
+/* ═══ الأزرار ═══ */
 .btn {
   width: 100%;
   padding: 14px;
@@ -157,6 +180,7 @@ body {
 .btn-success { background: #38a169; color: #fff; }
 .btn-secondary { background: #edf2f7; color: #4a5568; }
 
+/* ═══ الرسائل ═══ */
 .message {
   padding: 12px;
   border-radius: 10px;
@@ -170,6 +194,7 @@ body {
 .message.error { background: #fed7d7; color: #742a2a; border: 1px solid #fc8181; }
 .message.info { background: #bee3f8; color: #2a4365; border: 1px solid #90cdf4; }
 
+/* ═══ Spinner ═══ */
 .spinner {
   display: inline-block;
   width: 14px;
@@ -183,107 +208,96 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ═══ 🆕 الأجهزة الجديدة ═══ */
-.new-devices-section {
-  background: linear-gradient(135deg, #f0f7ff 0%, #e0eeff 100%);
-  border: 2px solid #b8d4ff;
-  border-radius: 14px;
+/* ═══ ⭐ الأجهزة الجديدة — تبويب مستقل ═══ */
+.new-devices-header {
+  text-align: center;
   padding: 15px;
-  margin-bottom: 20px;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e0eeff 100%);
+  border-radius: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #b8d4ff;
 }
-.new-devices-section h3 {
-  font-size: 14px;
+.new-devices-header h2 {
+  font-size: 16px;
   color: #1e5ba8;
   margin-bottom: 5px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
-.new-devices-section .subtitle {
-  font-size: 11px;
+.new-devices-header p {
+  font-size: 12px;
   color: #4a72b8;
-  margin-bottom: 12px;
 }
 .new-device-item {
   background: #fff;
-  border: 1.5px solid #b8d4ff;
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+  border: 2px solid #b8d4ff;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
   transition: all 0.2s;
+  position: relative;
 }
 .new-device-item:hover {
   border-color: #1e5ba8;
-  box-shadow: 0 3px 10px rgba(30, 91, 168, 0.15);
+  box-shadow: 0 4px 12px rgba(30, 91, 168, 0.15);
 }
 .new-device-item .info {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 .new-device-item .info .name {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: #1e5ba8;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .new-device-item .info .id {
-  font-size: 11px;
+  font-size: 12px;
   color: #4a72b8;
   font-family: monospace;
   direction: ltr;
   background: #f0f7ff;
-  padding: 2px 6px;
-  border-radius: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
   display: inline-block;
   word-break: break-all;
 }
 .new-device-item .info .model {
-  font-size: 10px;
+  font-size: 11px;
   color: #a0aec0;
 }
-.new-device-item .use-btn {
+.new-device-item .info .time {
+  font-size: 10px;
+  color: #cbd5e0;
+  margin-top: 2px;
+}
+.new-device-item .actions {
+  display: flex;
+  gap: 6px;
+}
+.new-device-item .actions button {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.new-device-item .actions .use-btn {
   background: #1e5ba8;
   color: #fff;
-  border: 0;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
 }
-.new-device-item .use-btn:hover { background: #164a8c; }
-.new-device-item .use-btn:active { transform: scale(0.95); }
-.no-new-devices {
-  text-align: center;
-  padding: 15px;
-  color: #7a9bd4;
-  font-size: 12px;
+.new-device-item .actions .use-btn:hover { background: #164a8c; }
+.new-device-item .actions .use-btn:active { transform: scale(0.97); }
+.new-device-item .actions .delete-btn {
+  background: #fed7d7;
+  color: #c53030;
+  flex: 0 0 auto;
+  padding: 9px 12px;
 }
-.refresh-new-btn {
-  background: transparent;
-  border: 1px solid #b8d4ff;
-  color: #1e5ba8;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: inherit;
-  margin-top: 8px;
-  width: 100%;
-}
-.refresh-new-btn:hover { background: #e8f0ff; }
+.new-device-item .actions .delete-btn:hover { background: #feb2b2; }
 
 /* ═══ بطاقات الأجهزة ═══ */
 .device-card {
@@ -368,6 +382,7 @@ body {
 .stat-box.revoked .num { color: #e53e3e; }
 .stat-box.expired .num { color: #ed8936; }
 .stat-box.total .num { color: #667eea; }
+.stat-box.pending .num { color: #4299e1; }
 
 /* ═══ الإعدادات ═══ */
 .settings-card {
@@ -383,12 +398,46 @@ body {
   color: #7b341e;
 }
 
+/* ═══ الأقسام ═══ */
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4a5568;
+  margin: 20px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-title span {
+  font-size: 12px;
+  color: #a0aec0;
+  font-weight: 600;
+}
+
 .empty-state {
   text-align: center;
   padding: 40px 20px;
   color: #a0aec0;
   font-size: 14px;
 }
+.empty-state .icon {
+  font-size: 50px;
+  margin-bottom: 12px;
+}
+.empty-state .title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #718096;
+  margin-bottom: 6px;
+}
+.empty-state .desc {
+  font-size: 12px;
+  color: #a0aec0;
+  line-height: 1.6;
+}
+
 .footer {
   text-align: center;
   padding: 15px;
@@ -419,8 +468,13 @@ body {
       <p>نظام تفعيل التطبيق</p>
     </div>
 
+    <!-- ═══ التابات ═══ -->
     <div class="tabs">
       <div class="tab active" onclick="switchTab('activate')">تفعيل</div>
+      <div class="tab" onclick="switchTab('new')">
+        🆕 جديدة
+        <span class="badge hidden" id="newBadge">0</span>
+      </div>
       <div class="tab" onclick="switchTab('manage')">إدارة</div>
       <div class="tab" onclick="switchTab('all')">📊 الكل</div>
     </div>
@@ -429,19 +483,10 @@ body {
 
       <!-- ═══════ تبويب التفعيل ═══════ -->
       <div id="tab-activate" class="tab-content active">
-
-        <!-- 🆕 الأجهزة الجديدة -->
-        <div class="new-devices-section" id="newDevicesSection" style="display:none;">
-          <h3>🆕 أجهزة جديدة</h3>
-          <div class="subtitle">أرسلت معرّفها تلقائياً — اضغط للاستخدام</div>
-          <div id="newDevicesList"></div>
-          <button class="refresh-new-btn" onclick="loadNewDevices()">🔄 تحديث القائمة</button>
-        </div>
-
         <div class="field">
           <label>معرّف التطبيق</label>
           <input type="text" id="deviceId" placeholder="hkm_xxxxxx">
-          <div class="hint">اختر من الأجهزة الجديدة ↑ أو انسخه يدوياً من التطبيق</div>
+          <div class="hint">من التطبيق أو من تبويب "🆕 جديدة"</div>
         </div>
 
         <div class="field">
@@ -471,6 +516,27 @@ body {
         </button>
 
         <div class="message" id="msgActivate"></div>
+      </div>
+
+      <!-- ═══════ تبويب الأجهزة الجديدة ═══════ -->
+      <div id="tab-new" class="tab-content">
+        <div class="new-devices-header">
+          <h2>🆕 الأجهزة الجديدة</h2>
+          <p>أرسلت معرّفها تلقائياً — اضغط "استخدام" للتفعيل</p>
+        </div>
+
+        <div id="newDevicesList">
+          <div class="empty-state">
+            <div class="icon">⏳</div>
+            <div class="title">جاري التحميل...</div>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="loadNewDevices()" style="margin-top:15px;">
+          🔄 تحديث القائمة
+        </button>
+
+        <div class="message" id="msgNew"></div>
       </div>
 
       <!-- ═══════ تبويب الإدارة ═══════ -->
@@ -510,11 +576,30 @@ body {
           </div>
         </div>
 
+        <div class="stats-grid" style="grid-template-columns: 1fr;">
+          <div class="stat-box pending">
+            <div class="num" id="statPending">-</div>
+            <div class="lbl">🆕 بانتظار التفعيل</div>
+          </div>
+        </div>
+
         <button class="btn btn-secondary" onclick="loadAllDevices()" style="margin-bottom:15px;">
           🔄 تحديث القائمة
         </button>
 
-        <div id="allDevicesList"></div>
+        <!-- الأجهزة المُفعَّلة -->
+        <div class="section-title">
+          📱 الأجهزة المُفعَّلة
+          <span id="countActive">0</span>
+        </div>
+        <div id="activeDevicesList"></div>
+
+        <!-- الأجهزة الجديدة -->
+        <div class="section-title">
+          🆕 الأجهزة الجديدة
+          <span id="countPending">0</span>
+        </div>
+        <div id="pendingDevicesList"></div>
 
         <!-- ⚙️ إعدادات -->
         <div class="settings-card">
@@ -534,8 +619,7 @@ body {
       © حكيم العيلة — جميع الحقوق محفوظة
     </div>
   </div>
-</div>
-<script>
+</div><script>
 /* ══════════════════════════════════════════════
    الإعدادات
    ══════════════════════════════════════════════ */
@@ -583,8 +667,7 @@ function showLogin() {
 function showMain() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("mainContent").style.display = "block";
-  // 🆕 تحميل الأجهزة الجديدة تلقائياً
-  loadNewDevices();
+  updateNewBadge();
 }
 
 /* ══════════════════════════════════════════════
@@ -620,6 +703,7 @@ async function login() {
       saveSession();
       showMain();
       loadAllDevices();
+      loadNewDevices();
     } else {
       showMsg("msgLogin", "❌ كلمة المرور غير صحيحة", "error");
       document.getElementById("passwordInput").value = "";
@@ -652,12 +736,15 @@ function switchTab(name) {
   if (name === 'activate') {
     tabs[0].classList.add('active');
     document.getElementById('tab-activate').classList.add('active');
+  } else if (name === 'new') {
+    tabs[1].classList.add('active');
+    document.getElementById('tab-new').classList.add('active');
     loadNewDevices();
   } else if (name === 'manage') {
-    tabs[1].classList.add('active');
+    tabs[2].classList.add('active');
     document.getElementById('tab-manage').classList.add('active');
   } else if (name === 'all') {
-    tabs[2].classList.add('active');
+    tabs[3].classList.add('active');
     document.getElementById('tab-all').classList.add('active');
     loadAllDevices();
   }
@@ -677,16 +764,14 @@ function hideMsg(id) {
 }
 
 /* ══════════════════════════════════════════════
-   🆕 الأجهزة الجديدة (من pending_devices)
+   🆕 الأجهزة الجديدة (pending_devices)
    ══════════════════════════════════════════════ */
 async function loadNewDevices() {
-  const section = document.getElementById('newDevicesSection');
   const list = document.getElementById('newDevicesList');
-
-  if (!section || !list) return;
+  if (!list) return;
 
   try {
-    const url = SUPABASE_URL + '/rest/v1/pending_devices?consumed=eq.false&order=first_seen.desc&limit=20';
+    const url = SUPABASE_URL + '/rest/v1/pending_devices?consumed=eq.false&order=first_seen.desc&limit=50';
 
     const res = await fetch(url, {
       headers: {
@@ -697,18 +782,24 @@ async function loadNewDevices() {
     });
 
     if (!res.ok) {
-      section.style.display = 'none';
+      list.innerHTML = '<div class="empty-state"><div class="icon">❌</div><div class="title">فشل التحميل</div></div>';
       return;
     }
 
     const devices = await res.json();
 
+    // ✅ تحديث badge
+    updateNewBadgeCount(devices.length);
+
     if (!devices || devices.length === 0) {
-      section.style.display = 'none';
+      list.innerHTML = '<div class="empty-state">'
+        + '<div class="icon">✅</div>'
+        + '<div class="title">لا توجد أجهزة جديدة</div>'
+        + '<div class="desc">كل الأجهزة مُفعَّلة حالياً</div>'
+        + '</div>';
       return;
     }
 
-    section.style.display = 'block';
     list.innerHTML = '';
 
     devices.forEach(d => {
@@ -718,57 +809,138 @@ async function loadNewDevices() {
       const deviceName = d.device_name || d.device_id || 'جهاز';
       const deviceId = d.device_id || '';
       const deviceModel = d.device_model || '';
+      const firstSeen = d.first_seen || '';
 
-      const info = document.createElement('div');
-      info.className = 'info';
-
-      const nameEl = document.createElement('div');
-      nameEl.className = 'name';
-      nameEl.textContent = '📱 ' + deviceName;
-      info.appendChild(nameEl);
-
-      const idEl = document.createElement('div');
-      idEl.className = 'id';
-      idEl.textContent = deviceId;
-      info.appendChild(idEl);
-
-      if (deviceModel) {
-        const modelEl = document.createElement('div');
-        modelEl.className = 'model';
-        modelEl.textContent = deviceModel;
-        info.appendChild(modelEl);
+      let timeText = '';
+      if (firstSeen) {
+        try {
+          const dt = new Date(firstSeen);
+          const diffMin = Math.floor((Date.now() - dt.getTime()) / 60000);
+          if (diffMin < 1) timeText = 'الآن';
+          else if (diffMin < 60) timeText = 'منذ ' + diffMin + ' دقيقة';
+          else if (diffMin < 1440) timeText = 'منذ ' + Math.floor(diffMin/60) + ' ساعة';
+          else timeText = 'منذ ' + Math.floor(diffMin/1440) + ' يوم';
+        } catch (e) {}
       }
 
-      const btn = document.createElement('button');
-      btn.className = 'use-btn';
-      btn.textContent = 'استخدام';
-      btn.onclick = function() { useNewDevice(deviceId); };
+      item.innerHTML = `
+        <div class="info">
+          <div class="name">📱 ${escapeHtml(deviceName)}</div>
+          <div class="id">${escapeHtml(deviceId)}</div>
+          ${deviceModel ? `<div class="model">${escapeHtml(deviceModel)}</div>` : ''}
+          ${timeText ? `<div class="time">⏱️ ${escapeHtml(timeText)}</div>` : ''}
+        </div>
+        <div class="actions">
+          <button class="use-btn" onclick="useNewDevice('${escapeHtml(deviceId)}')">✅ استخدام</button>
+          <button class="delete-btn" onclick="deleteNewDevice('${escapeHtml(deviceId)}')">🗑️</button>
+        </div>
+      `;
 
-      item.appendChild(info);
-      item.appendChild(btn);
       list.appendChild(item);
     });
 
   } catch (e) {
-    section.style.display = 'none';
+    list.innerHTML = '<div class="empty-state"><div class="icon">❌</div><div class="title">' + escapeHtml(e.message) + '</div></div>';
   }
 }
 
-/* استخدام جهاز جديد — يملأ الحقل + ينقل للتفعيل */
+/* ✅ تحديث badge على التاب */
+function updateNewBadgeCount(count) {
+  const badge = document.getElementById('newBadge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+async function updateNewBadge() {
+  try {
+    const url = SUPABASE_URL + '/rest/v1/pending_devices?consumed=eq.false&select=id';
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    updateNewBadgeCount(data.length);
+  } catch (e) {}
+}
+
+/* ✅ استخدام جهاز — يملأ النموذج + ينقل للتفعيل */
 function useNewDevice(deviceId) {
   try {
     const inp = document.getElementById('deviceId');
     if (inp) {
       inp.value = deviceId;
-      inp.focus();
     }
-    // تخزين للاستخدام لاحقاً
     try { localStorage.setItem('hakim_last_device', deviceId); } catch (e) {}
-    // التمرير لأعلى
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    switchTab('activate');
+    showToast('✅ تم نقل المعرّف — أكمل التفعيل');
   } catch (e) {}
 }
 
+/* ✅ حذف جهاز جديد */
+async function deleteNewDevice(deviceId) {
+  if (!confirm('حذف الجهاز ' + deviceId + ' من القائمة؟')) return;
+
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/pending_devices?device_id=eq.'
+      + encodeURIComponent(deviceId), {
+      method: 'DELETE',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    showToast('🗑️ تم الحذف');
+    loadNewDevices();
+
+  } catch (err) {
+    showToast('❌ فشل: ' + err.message);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   Escape HTML
+   ══════════════════════════════════════════════ */
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* ══════════════════════════════════════════════
+   Toast
+   ══════════════════════════════════════════════ */
+function showToast(msg) {
+  let t = document.getElementById('__toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = '__toast';
+    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);'
+      + 'background:#2d3748;color:#fff;padding:12px 22px;border-radius:10px;'
+      + 'font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;'
+      + 'max-width:80vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3);';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t.__timer);
+  t.__timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+</script>
+  <script>
 /* ══════════════════════════════════════════════
    تفعيل جهاز جديد
    ══════════════════════════════════════════════ */
@@ -822,40 +994,62 @@ async function activate() {
       throw new Error('HTTP ' + res.status + ': ' + errText);
     }
 
-    // ✅ تم التفعيل — علّم الجهاز كمُفعَّل (consumed=true)
+    /* ══════════════════════════════════════════════
+     * ✅ V2.0: تعليم الجهاز كمُفعَّل (consumed=true)
+     * مع كشف الأخطاء
+     * ══════════════════════════════════════════════ */
+    let patchOk = false;
+    let patchErr = '';
     try {
-      await fetch(SUPABASE_URL + '/rest/v1/pending_devices?device_id=eq.'
+      const patchRes = await fetch(SUPABASE_URL + '/rest/v1/pending_devices?device_id=eq.'
         + encodeURIComponent(deviceId), {
         method: 'PATCH',
         headers: {
           'apikey': SUPABASE_ANON_KEY,
           'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
           'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
+          'Prefer': 'return=representation'
         },
         body: JSON.stringify({ consumed: true })
       });
-    } catch (e) {}
+
+      if (patchRes.ok) {
+        const updated = await patchRes.json();
+        patchOk = true;
+        console.log('✅ تم تعليم الجهاز كمُفعَّل:', updated);
+      } else {
+        patchErr = await patchRes.text();
+        console.error('❌ PATCH فشل:', patchRes.status, patchErr);
+      }
+    } catch (e) {
+      patchErr = e.message;
+      console.error('❌ استثناء PATCH:', e);
+    }
 
     const durationText = duration === 'forever' ? '♾️ دائم' :
       (duration === '30' ? 'شهر' : (duration === '7' ? 'أسبوع' : 'يوم'));
 
-    showMsg('msgActivate',
+    let successMsg =
       '✅ <b>تم التفعيل بنجاح!</b><br><br>' +
       '📱 المعرّف: <code>' + deviceId + '</code><br>' +
       '⏱️ المدة: ' + durationText + '<br><br>' +
-      '💡 افتح التطبيق خلال 30 ثانية',
-      'success'
-    );
+      '💡 افتح التطبيق خلال 30 ثانية';
+
+    if (!patchOk && patchErr) {
+      successMsg += '<br><br><small style="color:#c53030;">⚠️ ملاحظة: لم يتم إخفاء الجهاز من قائمة "الجديدة"<br>السبب: ' + escapeHtml(patchErr.substring(0, 100)) + '</small>';
+    }
+
+    showMsg('msgActivate', successMsg, 'success');
 
     document.getElementById('botToken').value = '';
     document.getElementById('chatId').value = '';
 
-    // تحديث الأجهزة الجديدة
+    // ✅ تحديث كلا القائمتين
     loadNewDevices();
+    updateNewBadge();
 
   } catch (err) {
-    showMsg('msgActivate', '❌ <b>فشل التفعيل</b><br><br>' + err.message, 'error');
+    showMsg('msgActivate', '❌ <b>فشل التفعيل</b><br><br>' + escapeHtml(err.message), 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalText;
@@ -863,7 +1057,7 @@ async function activate() {
 }
 
 /* ══════════════════════════════════════════════
-   عرض أجهزة جهاز واحد
+   عرض أجهزة جهاز واحد (إدارة)
    ══════════════════════════════════════════════ */
 async function loadDevices() {
   const deviceId = document.getElementById('manageDeviceId').value.trim();
@@ -901,26 +1095,26 @@ async function loadDevices() {
    تحميل كل الأجهزة + الإحصاءات
    ══════════════════════════════════════════════ */
 async function loadAllDevices() {
-  const listEl = document.getElementById('allDevicesList');
-  if (!listEl) return;
+  const activeListEl = document.getElementById('activeDevicesList');
+  const pendingListEl = document.getElementById('pendingDevicesList');
 
-  listEl.innerHTML = '<div class="empty-state">⏳ جاري التحميل...</div>';
+  if (activeListEl) activeListEl.innerHTML = '<div class="empty-state">⏳ جاري التحميل...</div>';
+  if (pendingListEl) pendingListEl.innerHTML = '<div class="empty-state">⏳ جاري التحميل...</div>';
 
   try {
-    const url = SUPABASE_URL + '/rest/v1/tokens?select=*&order=created_at.desc';
-
-    const res = await fetch(url, {
+    /* ═══ 1) الأجهزة المُفعَّلة (tokens) ═══ */
+    const urlTokens = SUPABASE_URL + '/rest/v1/tokens?select=*&order=created_at.desc';
+    const resTokens = await fetch(urlTokens, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
       }
     });
 
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+    const tokens = resTokens.ok ? await resTokens.json() : [];
 
     let active = 0, revoked = 0, expired = 0;
-    data.forEach(d => {
+    tokens.forEach(d => {
       if (!d.active) { revoked++; return; }
       if (d.expires_at && new Date(d.expires_at) < new Date()) { expired++; return; }
       active++;
@@ -929,27 +1123,93 @@ async function loadAllDevices() {
     document.getElementById('statActive').textContent = active;
     document.getElementById('statRevoked').textContent = revoked;
     document.getElementById('statExpired').textContent = expired;
-    document.getElementById('statTotal').textContent = data.length;
+    document.getElementById('statTotal').textContent = tokens.length;
 
-    if (data.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">📭 لا توجد أجهزة مُفعَّلة بعد</div>';
-      return;
+    if (tokens.length === 0) {
+      if (activeListEl) {
+        activeListEl.innerHTML = '<div class="empty-state">'
+          + '<div class="icon">📭</div>'
+          + '<div class="title">لا توجد أجهزة مُفعَّلة</div>'
+          + '</div>';
+      }
+    } else {
+      if (activeListEl) {
+        activeListEl.innerHTML = '';
+        renderDevicesInto(tokens, activeListEl);
+      }
+    }
+    if (document.getElementById('countActive')) {
+      document.getElementById('countActive').textContent = tokens.length;
     }
 
-    renderDevices(data, 'allDevicesList');
+    /* ═══ 2) الأجهزة الجديدة (pending_devices) ═══ */
+    const urlPending = SUPABASE_URL + '/rest/v1/pending_devices?consumed=eq.false&order=first_seen.desc&limit=50';
+    const resPending = await fetch(urlPending, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+
+    const pending = resPending.ok ? await resPending.json() : [];
+
+    document.getElementById('statPending').textContent = pending.length;
+
+    if (pending.length === 0) {
+      if (pendingListEl) {
+        pendingListEl.innerHTML = '<div class="empty-state">'
+          + '<div class="icon">✅</div>'
+          + '<div class="title">لا توجد أجهزة جديدة</div>'
+          + '</div>';
+      }
+    } else {
+      if (pendingListEl) {
+        pendingListEl.innerHTML = '';
+        pending.forEach(d => {
+          const item = document.createElement('div');
+          item.className = 'new-device-item';
+
+          const deviceName = d.device_name || d.device_id || 'جهاز';
+          const deviceId = d.device_id || '';
+          const deviceModel = d.device_model || '';
+
+          item.innerHTML = `
+            <div class="info">
+              <div class="name">📱 ${escapeHtml(deviceName)}</div>
+              <div class="id">${escapeHtml(deviceId)}</div>
+              ${deviceModel ? `<div class="model">${escapeHtml(deviceModel)}</div>` : ''}
+            </div>
+            <div class="actions">
+              <button class="use-btn" onclick="useNewDevice('${escapeHtml(deviceId)}')">✅ استخدام</button>
+              <button class="delete-btn" onclick="deleteNewDevice('${escapeHtml(deviceId)}')">🗑️</button>
+            </div>
+          `;
+
+          pendingListEl.appendChild(item);
+        });
+      }
+    }
+    if (document.getElementById('countPending')) {
+      document.getElementById('countPending').textContent = pending.length;
+    }
+
+    // ✅ تحديث badge
+    updateNewBadgeCount(pending.length);
 
   } catch (err) {
-    listEl.innerHTML = '<div class="empty-state">❌ فشل: ' + err.message + '</div>';
+    if (activeListEl) {
+      activeListEl.innerHTML = '<div class="empty-state">❌ فشل: ' + escapeHtml(err.message) + '</div>';
+    }
+    if (pendingListEl) {
+      pendingListEl.innerHTML = '';
+    }
   }
 }
 
 /* ══════════════════════════════════════════════
-   رسم بطاقات الأجهزة
+   رسم بطاقات الأجهزة (داخل حاوٍ مخصص)
    ══════════════════════════════════════════════ */
-function renderDevices(devices, containerId) {
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-
+function renderDevicesInto(devices, container) {
   devices.forEach(d => {
     const card = document.createElement('div');
     card.className = 'device-card';
@@ -982,11 +1242,11 @@ function renderDevices(devices, containerId) {
     card.innerHTML = `
       <div class="row">
         <span class="label">المعرّف:</span>
-        <span class="value">${d.device_id}</span>
+        <span class="value">${escapeHtml(d.device_id)}</span>
       </div>
       <div class="row">
         <span class="label">Chat ID:</span>
-        <span class="value">${d.chat_id}</span>
+        <span class="value">${escapeHtml(String(d.chat_id || ''))}</span>
       </div>
       <div class="row">
         <span class="label">المتبقي:</span>
@@ -997,15 +1257,22 @@ function renderDevices(devices, containerId) {
         <span class="status ${statusClass}">${statusText}</span>
       </div>
       <div class="device-actions">
-        <button class="extend" onclick="extendDevice('${d.device_id}', 30)">+ شهر</button>
-        <button class="extend" onclick="extendDevice('${d.device_id}', 7)">+ أسبوع</button>
-        <button class="revoke" onclick="revokeDevice('${d.device_id}')">إلغاء</button>
-        <button class="delete" onclick="deleteDevice('${d.device_id}')">حذف</button>
+        <button class="extend" onclick="extendDevice('${escapeHtml(d.device_id)}', 30)">+ شهر</button>
+        <button class="extend" onclick="extendDevice('${escapeHtml(d.device_id)}', 7)">+ أسبوع</button>
+        <button class="revoke" onclick="revokeDevice('${escapeHtml(d.device_id)}')">إلغاء</button>
+        <button class="delete" onclick="deleteDevice('${escapeHtml(d.device_id)}')">حذف</button>
       </div>
     `;
 
     container.appendChild(card);
   });
+}
+
+function renderDevices(devices, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+  renderDevicesInto(devices, container);
 }
 
 /* ══════════════════════════════════════════════
@@ -1044,12 +1311,12 @@ async function extendDevice(deviceId, days) {
 
     if (!res2.ok) throw new Error('HTTP ' + res2.status);
 
-    alert('✅ تم التجديد +' + days + ' يوم');
-    if (document.getElementById('allDevicesList')) loadAllDevices();
+    showToast('✅ تم التجديد +' + days + ' يوم');
+    loadAllDevices();
     if (document.getElementById('devicesList')) loadDevices();
 
   } catch (err) {
-    alert('❌ فشل التجديد: ' + err.message);
+    showToast('❌ فشل: ' + err.message);
   }
 }
 
@@ -1074,12 +1341,12 @@ async function revokeDevice(deviceId) {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    alert('🚫 تم الإلغاء');
-    if (document.getElementById('allDevicesList')) loadAllDevices();
+    showToast('🚫 تم الإلغاء');
+    loadAllDevices();
     if (document.getElementById('devicesList')) loadDevices();
 
   } catch (err) {
-    alert('❌ فشل: ' + err.message);
+    showToast('❌ فشل: ' + err.message);
   }
 }
 
@@ -1101,12 +1368,12 @@ async function deleteDevice(deviceId) {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    alert('🗑️ تم الحذف نهائياً');
-    if (document.getElementById('allDevicesList')) loadAllDevices();
+    showToast('🗑️ تم الحذف نهائياً');
+    loadAllDevices();
     if (document.getElementById('devicesList')) loadDevices();
 
   } catch (err) {
-    alert('❌ فشل الحذف: ' + err.message);
+    showToast('❌ فشل الحذف: ' + err.message);
   }
 }
 
@@ -1170,10 +1437,9 @@ window.onload = function() {
   if (checkSession()) {
     showMain();
     loadAllDevices();
+    loadNewDevices();
   } else {
     showLogin();
   }
 };
-</script>
-</body>
-</html>
+      </script>
