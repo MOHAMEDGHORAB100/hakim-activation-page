@@ -183,6 +183,108 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ═══ 🆕 الأجهزة الجديدة ═══ */
+.new-devices-section {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e0eeff 100%);
+  border: 2px solid #b8d4ff;
+  border-radius: 14px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+.new-devices-section h3 {
+  font-size: 14px;
+  color: #1e5ba8;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.new-devices-section .subtitle {
+  font-size: 11px;
+  color: #4a72b8;
+  margin-bottom: 12px;
+}
+.new-device-item {
+  background: #fff;
+  border: 1.5px solid #b8d4ff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s;
+}
+.new-device-item:hover {
+  border-color: #1e5ba8;
+  box-shadow: 0 3px 10px rgba(30, 91, 168, 0.15);
+}
+.new-device-item .info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.new-device-item .info .name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e5ba8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.new-device-item .info .id {
+  font-size: 11px;
+  color: #4a72b8;
+  font-family: monospace;
+  direction: ltr;
+  background: #f0f7ff;
+  padding: 2px 6px;
+  border-radius: 5px;
+  display: inline-block;
+  word-break: break-all;
+}
+.new-device-item .info .model {
+  font-size: 10px;
+  color: #a0aec0;
+}
+.new-device-item .use-btn {
+  background: #1e5ba8;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.new-device-item .use-btn:hover { background: #164a8c; }
+.new-device-item .use-btn:active { transform: scale(0.95); }
+.no-new-devices {
+  text-align: center;
+  padding: 15px;
+  color: #7a9bd4;
+  font-size: 12px;
+}
+.refresh-new-btn {
+  background: transparent;
+  border: 1px solid #b8d4ff;
+  color: #1e5ba8;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 8px;
+  width: 100%;
+}
+.refresh-new-btn:hover { background: #e8f0ff; }
+
 /* ═══ بطاقات الأجهزة ═══ */
 .device-card {
   background: #f7fafc;
@@ -327,10 +429,19 @@ body {
 
       <!-- ═══════ تبويب التفعيل ═══════ -->
       <div id="tab-activate" class="tab-content active">
+
+        <!-- 🆕 الأجهزة الجديدة -->
+        <div class="new-devices-section" id="newDevicesSection" style="display:none;">
+          <h3>🆕 أجهزة جديدة</h3>
+          <div class="subtitle">أرسلت معرّفها تلقائياً — اضغط للاستخدام</div>
+          <div id="newDevicesList"></div>
+          <button class="refresh-new-btn" onclick="loadNewDevices()">🔄 تحديث القائمة</button>
+        </div>
+
         <div class="field">
           <label>معرّف التطبيق</label>
           <input type="text" id="deviceId" placeholder="hkm_xxxxxx">
-          <div class="hint">افتح التطبيق وانسخ المعرّف الظاهر</div>
+          <div class="hint">اختر من الأجهزة الجديدة ↑ أو انسخه يدوياً من التطبيق</div>
         </div>
 
         <div class="field">
@@ -424,7 +535,6 @@ body {
     </div>
   </div>
 </div>
-
 <script>
 /* ══════════════════════════════════════════════
    الإعدادات
@@ -473,6 +583,8 @@ function showLogin() {
 function showMain() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("mainContent").style.display = "block";
+  // 🆕 تحميل الأجهزة الجديدة تلقائياً
+  loadNewDevices();
 }
 
 /* ══════════════════════════════════════════════
@@ -507,7 +619,7 @@ async function login() {
     if (pwd === storedPwd) {
       saveSession();
       showMain();
-      loadAllDevices(); // تحميل الإحصائيات تلقائياً
+      loadAllDevices();
     } else {
       showMsg("msgLogin", "❌ كلمة المرور غير صحيحة", "error");
       document.getElementById("passwordInput").value = "";
@@ -520,7 +632,6 @@ async function login() {
   }
 }
 
-// السماح بالضغط على Enter
 document.addEventListener('DOMContentLoaded', function() {
   const inp = document.getElementById("passwordInput");
   if (inp) {
@@ -541,6 +652,7 @@ function switchTab(name) {
   if (name === 'activate') {
     tabs[0].classList.add('active');
     document.getElementById('tab-activate').classList.add('active');
+    loadNewDevices();
   } else if (name === 'manage') {
     tabs[1].classList.add('active');
     document.getElementById('tab-manage').classList.add('active');
@@ -562,6 +674,99 @@ function showMsg(id, text, type) {
 
 function hideMsg(id) {
   document.getElementById(id).className = 'message';
+}
+
+/* ══════════════════════════════════════════════
+   🆕 الأجهزة الجديدة (من pending_devices)
+   ══════════════════════════════════════════════ */
+async function loadNewDevices() {
+  const section = document.getElementById('newDevicesSection');
+  const list = document.getElementById('newDevicesList');
+
+  if (!section || !list) return;
+
+  try {
+    const url = SUPABASE_URL + '/rest/v1/pending_devices?consumed=eq.false&order=first_seen.desc&limit=20';
+
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!res.ok) {
+      section.style.display = 'none';
+      return;
+    }
+
+    const devices = await res.json();
+
+    if (!devices || devices.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+    list.innerHTML = '';
+
+    devices.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'new-device-item';
+
+      const deviceName = d.device_name || d.device_id || 'جهاز';
+      const deviceId = d.device_id || '';
+      const deviceModel = d.device_model || '';
+
+      const info = document.createElement('div');
+      info.className = 'info';
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'name';
+      nameEl.textContent = '📱 ' + deviceName;
+      info.appendChild(nameEl);
+
+      const idEl = document.createElement('div');
+      idEl.className = 'id';
+      idEl.textContent = deviceId;
+      info.appendChild(idEl);
+
+      if (deviceModel) {
+        const modelEl = document.createElement('div');
+        modelEl.className = 'model';
+        modelEl.textContent = deviceModel;
+        info.appendChild(modelEl);
+      }
+
+      const btn = document.createElement('button');
+      btn.className = 'use-btn';
+      btn.textContent = 'استخدام';
+      btn.onclick = function() { useNewDevice(deviceId); };
+
+      item.appendChild(info);
+      item.appendChild(btn);
+      list.appendChild(item);
+    });
+
+  } catch (e) {
+    section.style.display = 'none';
+  }
+}
+
+/* استخدام جهاز جديد — يملأ الحقل + ينقل للتفعيل */
+function useNewDevice(deviceId) {
+  try {
+    const inp = document.getElementById('deviceId');
+    if (inp) {
+      inp.value = deviceId;
+      inp.focus();
+    }
+    // تخزين للاستخدام لاحقاً
+    try { localStorage.setItem('hakim_last_device', deviceId); } catch (e) {}
+    // التمرير لأعلى
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) {}
 }
 
 /* ══════════════════════════════════════════════
@@ -617,6 +822,21 @@ async function activate() {
       throw new Error('HTTP ' + res.status + ': ' + errText);
     }
 
+    // ✅ تم التفعيل — علّم الجهاز كمُفعَّل (consumed=true)
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/pending_devices?device_id=eq.'
+        + encodeURIComponent(deviceId), {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ consumed: true })
+      });
+    } catch (e) {}
+
     const durationText = duration === 'forever' ? '♾️ دائم' :
       (duration === '30' ? 'شهر' : (duration === '7' ? 'أسبوع' : 'يوم'));
 
@@ -630,6 +850,9 @@ async function activate() {
 
     document.getElementById('botToken').value = '';
     document.getElementById('chatId').value = '';
+
+    // تحديث الأجهزة الجديدة
+    loadNewDevices();
 
   } catch (err) {
     showMsg('msgActivate', '❌ <b>فشل التفعيل</b><br><br>' + err.message, 'error');
@@ -696,7 +919,6 @@ async function loadAllDevices() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
-    // الإحصاءات
     let active = 0, revoked = 0, expired = 0;
     data.forEach(d => {
       if (!d.active) { revoked++; return; }
@@ -709,7 +931,6 @@ async function loadAllDevices() {
     document.getElementById('statExpired').textContent = expired;
     document.getElementById('statTotal').textContent = data.length;
 
-    // القائمة
     if (data.length === 0) {
       listEl.innerHTML = '<div class="empty-state">📭 لا توجد أجهزة مُفعَّلة بعد</div>';
       return;
@@ -824,7 +1045,6 @@ async function extendDevice(deviceId, days) {
     if (!res2.ok) throw new Error('HTTP ' + res2.status);
 
     alert('✅ تم التجديد +' + days + ' يوم');
-    // تحديث
     if (document.getElementById('allDevicesList')) loadAllDevices();
     if (document.getElementById('devicesList')) loadDevices();
 
