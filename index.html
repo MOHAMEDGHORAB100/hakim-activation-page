@@ -3,113 +3,150 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>حكيم العيلة - تفعيل</title>
+<title>حكيم العيلة — لوحة التحكم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
+:root {
+  --bg-grad-1: #667eea;
+  --bg-grad-2: #764ba2;
+  --card-bg: #ffffff;
+  --card-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  --text: #333;
+  --text-2: #4a5568;
+  --text-3: #718096;
+  --text-4: #a0aec0;
+  --border: #e2e8f0;
+  --border-2: #edf2f7;
+  --input-bg: #ffffff;
+  --bg-light: #f7fafc;
+  --primary: #667eea;
+  --primary-2: #764ba2;
+  --success: #38a169;
+  --danger: #e53e3e;
+  --warning: #ed8936;
+  --info: #4299e1;
+}
+[data-theme="dark"] {
+  --bg-grad-1: #1a202c;
+  --bg-grad-2: #2d3748;
+  --card-bg: #2d3748;
+  --card-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  --text: #e2e8f0;
+  --text-2: #cbd5e0;
+  --text-3: #a0aec0;
+  --text-4: #718096;
+  --border: #4a5568;
+  --border-2: #4a5568;
+  --input-bg: #1a202c;
+  --bg-light: #1a202c;
+}
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  font-family: -apple-system, "Segoe UI", Tahoma, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: 'Cairo', -apple-system, "Segoe UI", Tahoma, sans-serif;
+  background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
   min-height: 100vh;
   padding: 20px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  color: #333;
+  color: var(--text);
+  transition: background 0.3s;
 }
 .container {
   width: 100%;
-  max-width: 500px;
-  background: #fff;
+  max-width: 560px;
+  background: var(--card-bg);
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  box-shadow: var(--card-shadow);
   overflow: hidden;
+  transition: background 0.3s;
 }
+
+/* ═══ Header ═══ */
 .header {
   background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
   color: #fff;
-  padding: 25px 20px;
+  padding: 22px 20px;
   text-align: center;
   position: relative;
 }
-.header h1 { font-size: 22px; margin-bottom: 5px; }
-.header p { font-size: 13px; opacity: 0.85; }
-.header .logout-btn {
+.header h1 { font-size: 20px; margin-bottom: 4px; font-weight: 700; }
+.header p { font-size: 12px; opacity: 0.85; }
+.header .btn-top {
   position: absolute;
   top: 15px;
-  left: 15px;
   background: rgba(255,255,255,.15);
   border: 0;
   color: #fff;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   font-family: inherit;
+  transition: all 0.2s;
 }
-.header .logout-btn:hover { background: rgba(255,255,255,.25); }
+.header .btn-top:hover { background: rgba(255,255,255,.25); }
+.header .btn-top.left { left: 15px; }
+.header .btn-top.right { right: 15px; }
 
+/* ═══ شاشة تسجيل الدخول ═══ */
 .login-screen {
   padding: 40px 25px;
   text-align: center;
 }
-.login-screen .lock-icon {
-  font-size: 60px;
-  margin-bottom: 15px;
-}
-.login-screen h2 {
-  font-size: 20px;
-  margin-bottom: 8px;
-  color: #2d3748;
-}
-.login-screen p {
-  font-size: 13px;
-  color: #718096;
-  margin-bottom: 25px;
-}
+.login-screen .lock-icon { font-size: 60px; margin-bottom: 15px; }
+.login-screen h2 { font-size: 20px; margin-bottom: 8px; color: var(--text); }
+.login-screen p { font-size: 13px; color: var(--text-3); margin-bottom: 25px; }
 .login-input {
   width: 100%;
   padding: 14px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border);
   border-radius: 12px;
   font-size: 16px;
   font-family: inherit;
   text-align: center;
   letter-spacing: 3px;
   margin-bottom: 15px;
+  background: var(--input-bg);
+  color: var(--text);
 }
-.login-input:focus {
-  outline: none;
-  border-color: #667eea;
-}
+.login-input:focus { outline: none; border-color: var(--primary); }
 
+/* ═══ التابات ═══ */
 .tabs {
   display: flex;
-  background: #f7fafc;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--bg-light);
+  border-bottom: 1px solid var(--border);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
+.tabs::-webkit-scrollbar { display: none; }
 .tab {
   flex: 1;
-  min-width: 90px;
-  padding: 14px 8px;
+  min-width: 80px;
+  padding: 13px 8px;
   text-align: center;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: #718096;
+  color: var(--text-3);
   transition: all 0.2s;
   position: relative;
   white-space: nowrap;
+  font-family: inherit;
+  user-select: none;
 }
 .tab.active {
-  color: #667eea;
-  border-bottom: 3px solid #667eea;
-  background: #fff;
+  color: var(--primary);
+  border-bottom: 3px solid var(--primary);
+  background: var(--card-bg);
 }
 .tab .badge {
   display: inline-block;
-  background: #e53e3e;
+  background: var(--danger);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -121,61 +158,64 @@ body {
 }
 .tab .badge.hidden { display: none; }
 
-.content { padding: 25px 20px; }
+.content { padding: 22px 20px; }
 .tab-content { display: none; }
-.tab-content.active { display: block; }
+.tab-content.active { display: block; animation: fadeIn 0.3s; }
 
-.field { margin-bottom: 18px; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══ الحقول ═══ */
+.field { margin-bottom: 16px; }
 .field label {
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--text-2);
   margin-bottom: 6px;
 }
 .field input, .field select {
   width: 100%;
   padding: 12px 14px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--border);
   border-radius: 10px;
   font-size: 14px;
   font-family: inherit;
   transition: border-color 0.2s;
-  background: #fff;
+  background: var(--input-bg);
+  color: var(--text);
 }
 .field input:focus, .field select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--primary);
 }
-.field input[readonly] { background: #f7fafc; color: #718096; }
-.hint {
-  font-size: 11px;
-  color: #a0aec0;
-  margin-top: 4px;
-}
+.field input[readonly] { background: var(--bg-light); color: var(--text-3); }
+.hint { font-size: 11px; color: var(--text-4); margin-top: 4px; }
 
+/* ═══ الأزرار ═══ */
 .btn {
   width: 100%;
-  padding: 14px;
+  padding: 13px;
   border: none;
   border-radius: 10px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
 }
-.btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-}
+.btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; }
 .btn-primary:hover { opacity: 0.9; }
 .btn-primary:active { transform: scale(0.98); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-danger { background: #e53e3e; color: #fff; margin-top: 8px; }
-.btn-success { background: #38a169; color: #fff; }
-.btn-secondary { background: #edf2f7; color: #4a5568; }
+.btn-danger { background: var(--danger); color: #fff; margin-top: 8px; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-secondary { background: var(--border-2); color: var(--text-2); }
+.btn-small { padding: 8px 12px; font-size: 12px; width: auto; }
 
+/* ═══ الرسائل ═══ */
 .message {
   padding: 12px;
   border-radius: 10px;
@@ -189,6 +229,7 @@ body {
 .message.error { background: #fed7d7; color: #742a2a; border: 1px solid #fc8181; }
 .message.info { background: #bee3f8; color: #2a4365; border: 1px solid #90cdf4; }
 
+/* ═══ Spinner ═══ */
 .spinner {
   display: inline-block;
   width: 14px;
@@ -202,6 +243,53 @@ body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ═══ شريط البحث والتصفية ═══ */
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+.search-input {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px 14px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--input-bg);
+  color: var(--text);
+}
+.search-input:focus { outline: none; border-color: var(--primary); }
+
+.filter-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+.chip {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-3);
+  transition: all 0.2s;
+  font-family: inherit;
+  user-select: none;
+}
+.chip.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.chip:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+/* ═══ بطاقات الأجهزة الجديدة ═══ */
 .new-devices-header {
   text-align: center;
   padding: 15px;
@@ -210,63 +298,54 @@ body {
   margin-bottom: 15px;
   border: 1px solid #b8d4ff;
 }
+[data-theme="dark"] .new-devices-header {
+  background: linear-gradient(135deg, #1a3a5c, #0f2942);
+  border-color: #2d5b8f;
+}
 .new-devices-header h2 {
   font-size: 16px;
   color: #1e5ba8;
   margin-bottom: 5px;
 }
-.new-devices-header p {
-  font-size: 12px;
-  color: #4a72b8;
-}
+[data-theme="dark"] .new-devices-header h2 { color: #90cdf4; }
+.new-devices-header p { font-size: 12px; color: #4a72b8; }
+[data-theme="dark"] .new-devices-header p { color: #63b3ed; }
+
 .new-device-item {
-  background: #fff;
+  background: var(--card-bg);
   border: 2px solid #b8d4ff;
   border-radius: 12px;
   padding: 14px;
   margin-bottom: 10px;
   transition: all 0.2s;
-  position: relative;
 }
+[data-theme="dark"] .new-device-item { border-color: #2d5b8f; }
 .new-device-item:hover {
   border-color: #1e5ba8;
   box-shadow: 0 4px 12px rgba(30, 91, 168, 0.15);
+  transform: translateY(-2px);
 }
-.new-device-item .info {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-.new-device-item .info .name {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1e5ba8;
-}
+.new-device-item .info { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.new-device-item .info .name { font-size: 15px; font-weight: 700; color: #1e5ba8; }
+[data-theme="dark"] .new-device-item .info .name { color: #63b3ed; }
 .new-device-item .info .id {
   font-size: 12px;
   color: #4a72b8;
   font-family: monospace;
   direction: ltr;
-  background: #f0f7ff;
+  background: var(--bg-light);
   padding: 4px 10px;
   border-radius: 6px;
   display: inline-block;
   word-break: break-all;
+  cursor: pointer;
+  transition: all 0.2s;
 }
-.new-device-item .info .model {
-  font-size: 11px;
-  color: #a0aec0;
-}
-.new-device-item .info .time {
-  font-size: 10px;
-  color: #cbd5e0;
-  margin-top: 2px;
-}
-.new-device-item .actions {
-  display: flex;
-  gap: 6px;
-}
+.new-device-item .info .id:hover { background: #d0e4ff; }
+[data-theme="dark"] .new-device-item .info .id { color: #90cdf4; }
+.new-device-item .info .model { font-size: 11px; color: var(--text-4); }
+.new-device-item .info .time { font-size: 10px; color: var(--text-4); margin-top: 2px; }
+.new-device-item .actions { display: flex; gap: 6px; }
 .new-device-item .actions button {
   flex: 1;
   padding: 9px 12px;
@@ -278,42 +357,48 @@ body {
   font-family: inherit;
   transition: all 0.15s;
 }
-.new-device-item .actions .use-btn {
-  background: #1e5ba8;
-  color: #fff;
-}
+.new-device-item .actions .use-btn { background: #1e5ba8; color: #fff; }
 .new-device-item .actions .use-btn:hover { background: #164a8c; }
-.new-device-item .actions .use-btn:active { transform: scale(0.97); }
 .new-device-item .actions .delete-btn {
   background: #fed7d7;
   color: #c53030;
   flex: 0 0 auto;
-  padding: 9px 12px;
+  padding: 9px 14px;
 }
 .new-device-item .actions .delete-btn:hover { background: #feb2b2; }
 
+/* ═══ بطاقات الأجهزة ═══ */
 .device-card {
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  border-radius: 12px;
   padding: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  transition: all 0.2s;
 }
+.device-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
 .device-card .row {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
   margin-bottom: 6px;
 }
-.device-card .row .label { color: #718096; }
+.device-card .row .label { color: var(--text-3); }
 .device-card .row .value {
-  color: #2d3748;
+  color: var(--text);
   font-weight: 600;
   direction: ltr;
   text-align: left;
   word-break: break-all;
-  max-width: 60%;
+  max-width: 65%;
 }
+.device-card .row .value.copyable {
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+.device-card .row .value.copyable:hover { background: var(--border); }
 .device-card .status {
   display: inline-block;
   padding: 3px 10px;
@@ -340,11 +425,84 @@ body {
   cursor: pointer;
   font-weight: 600;
   font-family: inherit;
+  transition: all 0.15s;
 }
-.device-actions .extend { background: #38a169; color: #fff; }
-.device-actions .revoke { background: #ed8936; color: #fff; }
-.device-actions .delete { background: #e53e3e; color: #fff; }
+.device-actions button:hover { opacity: 0.9; transform: translateY(-1px); }
+.device-actions .extend { background: var(--success); color: #fff; }
+.device-actions .revoke { background: var(--warning); color: #fff; }
+.device-actions .delete { background: var(--danger); color: #fff; }
 
+/* ═══ تبويب الرسائل ═══ */
+.messages-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 15px;
+  background: var(--bg-light);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.messages-toolbar .field { margin-bottom: 0; }
+.messages-toolbar select,
+.messages-toolbar input {
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--input-bg);
+  color: var(--text);
+}
+.messages-toolbar select:focus,
+.messages-toolbar input:focus { outline: none; border-color: var(--primary); }
+
+.msg-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-right: 4px solid var(--primary);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+.msg-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.msg-item.sms { border-right-color: #4299e1; }
+.msg-item.call { border-right-color: #ed8936; }
+.msg-item.wa { border-right-color: #38b2ac; }
+.msg-item.voice { border-right-color: #9f7aea; }
+.msg-item.notif { border-right-color: #718096; }
+.msg-item .msg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.msg-item .msg-type {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: var(--bg-light);
+  color: var(--text-2);
+}
+.msg-item .msg-time { font-size: 10px; color: var(--text-4); }
+.msg-item .msg-from {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+.msg-item .msg-content {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+  word-break: break-word;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+/* ═══ الإحصائيات ═══ */
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -352,29 +510,57 @@ body {
   margin-bottom: 20px;
 }
 .stat-box {
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-light);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 15px;
   text-align: center;
+  transition: all 0.2s;
 }
-.stat-box .num {
-  font-size: 24px;
-  font-weight: 800;
-  color: #2d3748;
-  line-height: 1;
-}
-.stat-box .lbl {
-  font-size: 11px;
-  color: #718096;
-  margin-top: 5px;
-}
-.stat-box.active .num { color: #38a169; }
-.stat-box.revoked .num { color: #e53e3e; }
-.stat-box.expired .num { color: #ed8936; }
-.stat-box.total .num { color: #667eea; }
-.stat-box.pending .num { color: #4299e1; }
+.stat-box:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.stat-box .num { font-size: 24px; font-weight: 800; color: var(--text); line-height: 1; }
+.stat-box .lbl { font-size: 11px; color: var(--text-3); margin-top: 5px; }
+.stat-box.active .num { color: var(--success); }
+.stat-box.revoked .num { color: var(--danger); }
+.stat-box.expired .num { color: var(--warning); }
+.stat-box.total .num { color: var(--primary); }
+.stat-box.pending .num { color: var(--info); }
 
+.chart-container {
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 20px;
+  height: 220px;
+  position: relative;
+}
+
+/* ═══ الأقسام ═══ */
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-2);
+  margin: 20px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-title span { font-size: 12px; color: var(--text-4); font-weight: 600; }
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-4);
+  font-size: 14px;
+}
+.empty-state .icon { font-size: 50px; margin-bottom: 12px; }
+.empty-state .title { font-size: 15px; font-weight: 700; color: var(--text-3); margin-bottom: 6px; }
+.empty-state .desc { font-size: 12px; color: var(--text-4); line-height: 1.6; }
+
+/* ═══ إعدادات ═══ */
 .settings-card {
   background: #fdf8ec;
   border: 1px dashed #edcf95;
@@ -382,63 +568,47 @@ body {
   padding: 15px;
   margin-top: 20px;
 }
-.settings-card h3 {
-  font-size: 14px;
-  margin-bottom: 10px;
-  color: #7b341e;
+[data-theme="dark"] .settings-card {
+  background: #2d2410;
+  border-color: #6b5a1f;
 }
-
-.section-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #4a5568;
-  margin: 20px 0 10px;
-  padding-bottom: 8px;
-  border-bottom: 2px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.section-title span {
-  font-size: 12px;
-  color: #a0aec0;
-  font-weight: 600;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: #a0aec0;
-  font-size: 14px;
-}
-.empty-state .icon {
-  font-size: 50px;
-  margin-bottom: 12px;
-}
-.empty-state .title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #718096;
-  margin-bottom: 6px;
-}
-.empty-state .desc {
-  font-size: 12px;
-  color: #a0aec0;
-  line-height: 1.6;
-}
+.settings-card h3 { font-size: 14px; margin-bottom: 10px; color: #7b341e; }
+[data-theme="dark"] .settings-card h3 { color: #d4a017; }
 
 .footer {
   text-align: center;
   padding: 15px;
   font-size: 11px;
-  color: #a0aec0;
-  border-top: 1px solid #e2e8f0;
+  color: var(--text-4);
+  border-top: 1px solid var(--border);
 }
+
+/* ═══ FAB (زر عائم) ═══ */
+.fab {
+  position: fixed;
+  bottom: 25px;
+  left: 25px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: #fff;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  transition: all 0.3s;
+  z-index: 100;
+}
+.fab:hover { transform: scale(1.1) rotate(45deg); }
 </style>
 </head>
 <body>
 <div class="container">
 
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- شاشة تسجيل الدخول                            -->
+  <!-- ═══════════════════════════════════════════ -->
   <div id="loginScreen" class="login-screen" style="display:none;">
     <div class="lock-icon">🔒</div>
     <h2>حكيم العيلة</h2>
@@ -448,13 +618,20 @@ body {
     <div class="message" id="msgLogin"></div>
   </div>
 
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- المحتوى الرئيسي                               -->
+  <!-- ═══════════════════════════════════════════ -->
   <div id="mainContent" style="display:none;">
+    
+    <!-- Header -->
     <div class="header">
-      <button class="logout-btn" onclick="logout()">خروج</button>
+      <button class="btn-top left" onclick="toggleTheme()" title="الوضع الليلي">🌙</button>
+      <button class="btn-top right" onclick="logout()" title="خروج">خروج</button>
       <h1>🛡️ حكيم العيلة</h1>
-      <p>نظام تفعيل التطبيق</p>
+      <p>لوحة تحكم التفعيل</p>
     </div>
 
+    <!-- التابات -->
     <div class="tabs">
       <div class="tab active" onclick="switchTab('activate')">تفعيل</div>
       <div class="tab" onclick="switchTab('new')">
@@ -462,15 +639,19 @@ body {
         <span class="badge hidden" id="newBadge">0</span>
       </div>
       <div class="tab" onclick="switchTab('manage')">إدارة</div>
+      <div class="tab" onclick="switchTab('messages')">📨 الرسائل</div>
       <div class="tab" onclick="switchTab('all')">📊 الكل</div>
     </div>
 
     <div class="content">
 
+      <!-- ═════════════════════════════════════════ -->
+      <!-- تبويب التفعيل                              -->
+      <!-- ═════════════════════════════════════════ -->
       <div id="tab-activate" class="tab-content active">
         <div class="field">
           <label>معرّف التطبيق</label>
-          <input type="text" id="deviceId" placeholder="hkm_xxxxxx">
+          <input type="text" id="deviceId" placeholder="hkm_xxxxxx" dir="ltr">
           <div class="hint">من التطبيق أو من تبويب "🆕 جديدة"</div>
         </div>
 
@@ -503,6 +684,9 @@ body {
         <div class="message" id="msgActivate"></div>
       </div>
 
+      <!-- ═════════════════════════════════════════ -->
+      <!-- تبويب الأجهزة الجديدة                      -->
+      <!-- ═════════════════════════════════════════ -->
       <div id="tab-new" class="tab-content">
         <div class="new-devices-header">
           <h2>🆕 الأجهزة الجديدة</h2>
@@ -523,10 +707,13 @@ body {
         <div class="message" id="msgNew"></div>
       </div>
 
+      <!-- ═════════════════════════════════════════ -->
+      <!-- تبويب الإدارة                             -->
+      <!-- ═════════════════════════════════════════ -->
       <div id="tab-manage" class="tab-content">
         <div class="field">
           <label>معرّف التطبيق</label>
-          <input type="text" id="manageDeviceId" placeholder="hkm_xxxxxx">
+          <input type="text" id="manageDeviceId" placeholder="hkm_xxxxxx" dir="ltr">
           <div class="hint">أدخل المعرّف لعرض الأجهزة المُفعَّلة</div>
         </div>
 
@@ -538,7 +725,63 @@ body {
         <div class="message" id="msgManage"></div>
       </div>
 
+      <!-- ═════════════════════════════════════════ -->
+      <!-- تبويب الرسائل 🆕                          -->
+      <!-- ═════════════════════════════════════════ -->
+      <div id="tab-messages" class="tab-content">
+        
+        <div class="messages-toolbar">
+          <div class="field">
+            <label>📱 اختر الجهاز</label>
+            <select id="msgDeviceSelect" onchange="onDeviceChange()">
+              <option value="">— تحميل الأجهزة —</option>
+            </select>
+            <div class="hint">اختر جهازاً محدداً لعرض رسائله (ليس من كل الأجهزة)</div>
+          </div>
+
+          <div class="field" id="msgTypeFilterField" style="display:none;">
+            <label>🎯 نوع الرسالة</label>
+            <select id="msgTypeFilter" onchange="loadMessages()">
+              <option value="all">🔎 الكل</option>
+              <option value="sms">📨 SMS</option>
+              <option value="call">📞 مكالمات</option>
+              <option value="wa">💬 واتساب</option>
+              <option value="voice">🎙️ رسائل صوتية</option>
+              <option value="notif">🔔 إشعارات</option>
+            </select>
+          </div>
+
+          <div class="field" id="msgSearchField" style="display:none;">
+            <label>🔍 بحث في المحتوى</label>
+            <input type="text" id="msgSearchInput" placeholder="ابحث في الرسائل..." oninput="onSearchInput()">
+          </div>
+
+          <div id="msgButtonsField" style="display:none;">
+            <button class="btn btn-secondary btn-small" onclick="loadMessages()" style="margin-bottom:6px;">
+              🔄 تحديث
+            </button>
+            <button class="btn btn-secondary btn-small" onclick="exportMessagesCSV()">
+              📤 تصدير CSV
+            </button>
+          </div>
+        </div>
+
+        <div id="messagesList">
+          <div class="empty-state">
+            <div class="icon">📱</div>
+            <div class="title">اختر جهازاً أولاً</div>
+            <div class="desc">من القائمة أعلاه لعرض رسائله</div>
+          </div>
+        </div>
+
+        <div class="message" id="msgMessages"></div>
+      </div>
+
+      <!-- ═════════════════════════════════════════ -->
+      <!-- تبويب كل الأجهزة                          -->
+      <!-- ═════════════════════════════════════════ -->
       <div id="tab-all" class="tab-content">
+        
         <div class="stats-grid">
           <div class="stat-box active">
             <div class="num" id="statActive">-</div>
@@ -565,8 +808,27 @@ body {
           </div>
         </div>
 
+        <div class="chart-container">
+          <canvas id="statsChart"></canvas>
+        </div>
+
+        <div class="toolbar">
+          <input type="text" id="searchDevices" class="search-input" placeholder="🔍 ابحث بالمعرّف أو الاسم..." oninput="filterDevices()">
+        </div>
+
+        <div class="filter-chips" id="deviceFilterChips">
+          <div class="chip active" data-filter="all" onclick="setDeviceFilter('all')">الكل</div>
+          <div class="chip" data-filter="active" onclick="setDeviceFilter('active')">🟢 نشطة</div>
+          <div class="chip" data-filter="expired" onclick="setDeviceFilter('expired')">⏰ منتهية</div>
+          <div class="chip" data-filter="revoked" onclick="setDeviceFilter('revoked')">🔴 ملغاة</div>
+        </div>
+
         <button class="btn btn-secondary" onclick="loadAllDevices()" style="margin-bottom:15px;">
           🔄 تحديث القائمة
+        </button>
+
+        <button class="btn btn-secondary" onclick="exportDevicesCSV()" style="margin-bottom:15px;">
+          📤 تصدير CSV
         </button>
 
         <div class="section-title">
@@ -581,6 +843,7 @@ body {
         </div>
         <div id="pendingDevicesList"></div>
 
+        <!-- الإعدادات -->
         <div class="settings-card">
           <h3>⚙️ تغيير كلمة المرور</h3>
           <div class="field">
@@ -599,6 +862,9 @@ body {
     </div>
   </div>
 </div>
+
+<!-- ═══ Floating Action Button (تحديث سريع) ═══ -->
+<button class="fab" onclick="refreshAll()" title="تحديث الكل">🔄</button>
 <script>
 /* ══════════════════════════════════════════════
    الإعدادات
@@ -609,13 +875,26 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const SESSION_KEY = "hakim_session";
 const SESSION_DURATION = 60 * 60 * 1000;
 const HASH_SALT = "hakim_eila_salt_v1_2026";
-const HASH_PREFIX = "hsh:";  /* علامة أن القيمة hash */
+const HASH_PREFIX = "hsh:";
 const MAX_ATTEMPTS = 5;
 const LOCK_DURATION = 5 * 60 * 1000;
 const ATTEMPTS_KEY = "hakim_login_attempts";
+const THEME_KEY = "hakim_theme";
 
 /* ══════════════════════════════════════════════
-   🔐 SHA-256 Hash
+   حالة عامة
+   ══════════════════════════════════════════════ */
+let currentDevices = [];
+let allDevices = [];
+let deviceFilter = 'all';
+let currentMessages = [];
+let currentMessageDevice = '';
+let searchTimeout = null;
+let autoRefreshInterval = null;
+let statsChart = null;
+
+/* ══════════════════════════════════════════════
+   SHA-256 Hash
    ══════════════════════════════════════════════ */
 async function sha256(text) {
   try {
@@ -624,12 +903,10 @@ async function sha256(text) {
     return Array.from(new Uint8Array(hash))
       .map(b => b.toString(16).padStart(2, '0')).join('');
   } catch (e) {
-    /* fallback لو crypto.subtle غير متوفر (HTTP قديم) */
     return fallbackHash(text);
   }
 }
 
-/* Fallback hash بسيط (احتياطي فقط) */
 function fallbackHash(text) {
   let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
   for (let i = 0, ch; i < text.length; i++) {
@@ -647,12 +924,10 @@ function fallbackHash(text) {
   return result;
 }
 
-/* hash مع salt */
 async function hashPassword(password) {
   return await sha256(password + ":" + HASH_SALT);
 }
 
-/* مقارنة آمنة (constant-time تقريباً) */
 function safeEqual(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false;
   if (a.length !== b.length) return false;
@@ -662,7 +937,7 @@ function safeEqual(a, b) {
 }
 
 /* ══════════════════════════════════════════════
-   🚫 Brute Force Protection
+   Brute Force Protection
    ══════════════════════════════════════════════ */
 function getAttempts() {
   try {
@@ -696,10 +971,42 @@ function clearAttempts() {
 function isLockedOut() {
   const data = getAttempts();
   if (data.until > Date.now()) {
-    const remaining = Math.ceil((data.until - Date.now()) / 1000);
-    return remaining;
+    return Math.ceil((data.until - Date.now()) / 1000);
   }
   return 0;
+}
+
+/* ══════════════════════════════════════════════
+   Theme (Dark Mode)
+   ══════════════════════════════════════════════ */
+function loadTheme() {
+  try {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (saved === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      // Auto
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    }
+  } catch (e) {}
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  
+  // تحديث الشارت
+  if (statsChart) {
+    const isDark = next === 'dark';
+    statsChart.options.plugins.legend.labels.color = isDark ? '#e2e8f0' : '#4a5568';
+    statsChart.update();
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -727,6 +1034,7 @@ function saveSession() {
 function logout() {
   if (!confirm("تسجيل الخروج؟")) return;
   try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+  stopAutoRefresh();
   showLogin();
 }
 
@@ -734,17 +1042,47 @@ function showLogin() {
   document.getElementById("loginScreen").style.display = "block";
   document.getElementById("mainContent").style.display = "none";
   document.getElementById("passwordInput").value = "";
-  document.getElementById("passwordInput").focus();
+  setTimeout(() => document.getElementById("passwordInput").focus(), 100);
 }
 
 function showMain() {
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("mainContent").style.display = "block";
   updateNewBadge();
+  startAutoRefresh();
 }
 
 /* ══════════════════════════════════════════════
-   🔓 تسجيل الدخول
+   Auto Refresh (كل 15 ثانية عند الرؤية)
+   ══════════════════════════════════════════════ */
+function startAutoRefresh() {
+  stopAutoRefresh();
+  autoRefreshInterval = setInterval(() => {
+    if (!document.hidden && checkSession()) {
+      updateNewBadge();
+      // تحديث خفيف فقط
+      if (document.getElementById('tab-all').classList.contains('active')) {
+        loadAllDevices();
+      }
+    }
+  }, 15000);
+}
+
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && checkSession()) {
+    updateNewBadge();
+  }
+});
+
+/* ══════════════════════════════════════════════
+   تسجيل الدخول
    ══════════════════════════════════════════════ */
 async function login() {
   const pwd = document.getElementById("passwordInput").value;
@@ -753,7 +1091,6 @@ async function login() {
     return;
   }
 
-  /* فحص القفل */
   const lockedSec = isLockedOut();
   if (lockedSec > 0) {
     showMsg("msgLogin", "🔒 محظور — جرب بعد " + lockedSec + " ثانية", "error");
@@ -781,13 +1118,10 @@ async function login() {
     let match = false;
     let migrationNeeded = false;
 
-    /* ✅ الحالة 1: القيمة hash (محدثة) */
     if (storedValue.startsWith(HASH_PREFIX)) {
       const storedHash = storedValue.substring(HASH_PREFIX.length);
       const inputHash = await hashPassword(pwd);
       match = safeEqual(inputHash, storedHash);
-
-    /* ⚠️ الحالة 2: القيمة نص صريح (قديمة) — ترحيل تلقائي */
     } else {
       if (pwd === storedValue) {
         match = true;
@@ -796,7 +1130,6 @@ async function login() {
     }
 
     if (match) {
-      /* ✅ ترحيل تلقائي من نص صريح → hash */
       if (migrationNeeded) {
         try {
           const newHash = await hashPassword(pwd);
@@ -812,7 +1145,7 @@ async function login() {
           });
           console.log('🔐 تم ترحيل كلمة المرور إلى hash');
         } catch (e) {
-          console.warn('⚠️ فشل الترحيل — سيعاد المحاولة', e);
+          console.warn('⚠️ فشل الترحيل', e);
         }
       }
 
@@ -852,6 +1185,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (e.key === 'Enter') login();
     });
   }
+
+  // Ctrl+R refresh
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'r' && !document.hidden) {
+      e.preventDefault();
+      refreshAll();
+    }
+  });
 });
 
 /* ══════════════════════════════════════════════
@@ -862,21 +1203,15 @@ function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
 
   const tabs = document.querySelectorAll('.tab');
-  if (name === 'activate') {
-    tabs[0].classList.add('active');
-    document.getElementById('tab-activate').classList.add('active');
-  } else if (name === 'new') {
-    tabs[1].classList.add('active');
-    document.getElementById('tab-new').classList.add('active');
-    loadNewDevices();
-  } else if (name === 'manage') {
-    tabs[2].classList.add('active');
-    document.getElementById('tab-manage').classList.add('active');
-  } else if (name === 'all') {
-    tabs[3].classList.add('active');
-    document.getElementById('tab-all').classList.add('active');
-    loadAllDevices();
-  }
+  const idx = { activate: 0, 'new': 1, manage: 2, messages: 3, all: 4 };
+  
+  if (tabs[idx[name]]) tabs[idx[name]].classList.add('active');
+  const contentEl = document.getElementById('tab-' + name);
+  if (contentEl) contentEl.classList.add('active');
+
+  if (name === 'new') loadNewDevices();
+  if (name === 'all') loadAllDevices();
+  if (name === 'messages') loadDeviceListForMessages();
 }
 
 /* ══════════════════════════════════════════════
@@ -892,8 +1227,103 @@ function hideMsg(id) {
   document.getElementById(id).className = 'message';
 }
 
+function showToast(msg) {
+  let t = document.getElementById('__toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = '__toast';
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);'
+      + 'background:#2d3748;color:#fff;padding:12px 22px;border-radius:10px;'
+      + 'font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;'
+      + 'max-width:80vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3);';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t.__timer);
+  t.__timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /* ══════════════════════════════════════════════
-   🆕 الأجهزة الجديدة
+   Copy to clipboard
+   ══════════════════════════════════════════════ */
+function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('📋 تم النسخ');
+    }).catch(() => {
+      fallbackCopy(text);
+    });
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('📋 تم النسخ');
+  } catch (e) {
+    showToast('❌ فشل النسخ');
+  }
+  document.body.removeChild(ta);
+}
+
+/* ══════════════════════════════════════════════
+   Notifications
+   ══════════════════════════════════════════════ */
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  try {
+    const perm = await Notification.requestPermission();
+    return perm === 'granted';
+  } catch (e) { return false; }
+}
+
+function sendNotification(title, body) {
+  try {
+    if (Notification.permission === 'granted') {
+      new Notification(title, {
+        body: body,
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🛡️</text></svg>',
+        tag: 'hakim_' + Date.now(),
+        requireInteraction: false
+      });
+    }
+  } catch (e) {}
+}
+
+let lastNewDevicesCount = -1;
+function checkNewDevicesNotify(count) {
+  if (lastNewDevicesCount === -1) {
+    lastNewDevicesCount = count;
+    return;
+  }
+  if (count > lastNewDevicesCount) {
+    sendNotification('🆕 جهاز جديد', count + ' جهاز بانتظار التفعيل');
+  }
+  lastNewDevicesCount = count;
+}
+
+/* ══════════════════════════════════════════════
+   الأجهزة الجديدة
    ══════════════════════════════════════════════ */
 async function loadNewDevices() {
   const list = document.getElementById('newDevicesList');
@@ -917,6 +1347,7 @@ async function loadNewDevices() {
 
     const devices = await res.json();
     updateNewBadgeCount(devices.length);
+    checkNewDevicesNotify(devices.length);
 
     if (!devices || devices.length === 0) {
       list.innerHTML = '<div class="empty-state">'
@@ -953,7 +1384,7 @@ async function loadNewDevices() {
       item.innerHTML = `
         <div class="info">
           <div class="name">📱 ${escapeHtml(deviceName)}</div>
-          <div class="id">${escapeHtml(deviceId)}</div>
+          <div class="id" onclick="copyText('${escapeHtml(deviceId)}')" title="اضغط للنسخ">${escapeHtml(deviceId)}</div>
           ${deviceModel ? `<div class="model">${escapeHtml(deviceModel)}</div>` : ''}
           ${timeText ? `<div class="time">⏱️ ${escapeHtml(timeText)}</div>` : ''}
         </div>
@@ -994,17 +1425,16 @@ async function updateNewBadge() {
     if (!res.ok) return;
     const data = await res.json();
     updateNewBadgeCount(data.length);
+    checkNewDevicesNotify(data.length);
   } catch (e) {}
 }
 
 function useNewDevice(deviceId) {
-  try {
-    const inp = document.getElementById('deviceId');
-    if (inp) inp.value = deviceId;
-    try { localStorage.setItem('hakim_last_device', deviceId); } catch (e) {}
-    switchTab('activate');
-    showToast('✅ تم نقل المعرّف — أكمل التفعيل');
-  } catch (e) {}
+  const inp = document.getElementById('deviceId');
+  if (inp) inp.value = deviceId;
+  try { localStorage.setItem('hakim_last_device', deviceId); } catch (e) {}
+  switchTab('activate');
+  showToast('✅ تم نقل المعرّف — أكمل التفعيل');
 }
 
 async function deleteNewDevice(deviceId) {
@@ -1031,39 +1461,7 @@ async function deleteNewDevice(deviceId) {
 }
 
 /* ══════════════════════════════════════════════
-   Escape HTML
-   ══════════════════════════════════════════════ */
-function escapeHtml(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-/* ══════════════════════════════════════════════
-   Toast
-   ══════════════════════════════════════════════ */
-function showToast(msg) {
-  let t = document.getElementById('__toast');
-  if (!t) {
-    t = document.createElement('div');
-    t.id = '__toast';
-    t.style.cssText = 'position:fixed;bottom:30px;left:50%;transform:translateX(-50%);'
-      + 'background:#2d3748;color:#fff;padding:12px 22px;border-radius:10px;'
-      + 'font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;'
-      + 'max-width:80vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3);';
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.style.opacity = '1';
-  clearTimeout(t.__timer);
-  t.__timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
-}
-
-/* ══════════════════════════════════════════════
-   تفعيل جهاز جديد
+   التفعيل
    ══════════════════════════════════════════════ */
 async function activate() {
   const deviceId = document.getElementById('deviceId').value.trim();
@@ -1115,10 +1513,8 @@ async function activate() {
       throw new Error('HTTP ' + res.status + ': ' + errText);
     }
 
-    /* تعليم الجهاز كمُفعَّل */
-    let patchOk = false;
     try {
-      const patchRes = await fetch(SUPABASE_URL + '/rest/v1/pending_devices?device_id=eq.'
+      await fetch(SUPABASE_URL + '/rest/v1/pending_devices?device_id=eq.'
         + encodeURIComponent(deviceId), {
         method: 'PATCH',
         headers: {
@@ -1129,7 +1525,6 @@ async function activate() {
         },
         body: JSON.stringify({ consumed: true })
       });
-      patchOk = patchRes.ok;
     } catch (e) {}
 
     const durationText = duration === 'forever' ? '♾️ دائم' :
@@ -1157,7 +1552,7 @@ async function activate() {
 }
 
 /* ══════════════════════════════════════════════
-   عرض أجهزة جهاز واحد
+   إدارة الأجهزة
    ══════════════════════════════════════════════ */
 async function loadDevices() {
   const deviceId = document.getElementById('manageDeviceId').value.trim();
@@ -1191,9 +1586,6 @@ async function loadDevices() {
   }
 }
 
-/* ══════════════════════════════════════════════
-   تحميل كل الأجهزة
-   ══════════════════════════════════════════════ */
 async function loadAllDevices() {
   const activeListEl = document.getElementById('activeDevicesList');
   const pendingListEl = document.getElementById('pendingDevicesList');
@@ -1211,6 +1603,7 @@ async function loadAllDevices() {
     });
 
     const tokens = resTokens.ok ? await resTokens.json() : [];
+    allDevices = tokens;
 
     let active = 0, revoked = 0, expired = 0;
     tokens.forEach(d => {
@@ -1224,16 +1617,10 @@ async function loadAllDevices() {
     document.getElementById('statExpired').textContent = expired;
     document.getElementById('statTotal').textContent = tokens.length;
 
-    if (tokens.length === 0) {
-      if (activeListEl) {
-        activeListEl.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div class="title">لا توجد أجهزة مُفعَّلة</div></div>';
-      }
-    } else {
-      if (activeListEl) {
-        activeListEl.innerHTML = '';
-        renderDevicesInto(tokens, activeListEl);
-      }
-    }
+    renderChart(active, expired, revoked);
+
+    filterDevices();
+
     if (document.getElementById('countActive')) {
       document.getElementById('countActive').textContent = tokens.length;
     }
@@ -1268,7 +1655,7 @@ async function loadAllDevices() {
           item.innerHTML = `
             <div class="info">
               <div class="name">📱 ${escapeHtml(deviceName)}</div>
-              <div class="id">${escapeHtml(deviceId)}</div>
+              <div class="id" onclick="copyText('${escapeHtml(deviceId)}')">${escapeHtml(deviceId)}</div>
               ${deviceModel ? `<div class="model">${escapeHtml(deviceModel)}</div>` : ''}
             </div>
             <div class="actions">
@@ -1286,6 +1673,7 @@ async function loadAllDevices() {
     }
 
     updateNewBadgeCount(pending.length);
+    checkNewDevicesNotify(pending.length);
 
   } catch (err) {
     if (activeListEl) {
@@ -1295,6 +1683,57 @@ async function loadAllDevices() {
   }
 }
 
+/* ══════════════════════════════════════════════
+   Filter Devices
+   ══════════════════════════════════════════════ */
+function setDeviceFilter(filter) {
+  deviceFilter = filter;
+  document.querySelectorAll('#deviceFilterChips .chip').forEach(c => {
+    c.classList.toggle('active', c.getAttribute('data-filter') === filter);
+  });
+  filterDevices();
+}
+
+function filterDevices() {
+  const search = (document.getElementById('searchDevices')?.value || '').toLowerCase().trim();
+  const container = document.getElementById('activeDevicesList');
+  if (!container) return;
+
+  let filtered = allDevices.filter(d => {
+    // البحث
+    if (search) {
+      const did = (d.device_id || '').toLowerCase();
+      const chat = String(d.chat_id || '').toLowerCase();
+      const token = (d.bot_token || '').toLowerCase();
+      if (!did.includes(search) && !chat.includes(search) && !token.includes(search)) {
+        return false;
+      }
+    }
+
+    // التصفية
+    if (deviceFilter === 'all') return true;
+    const isActive = d.active && (!d.expires_at || new Date(d.expires_at) >= new Date());
+    const isExpired = d.active && d.expires_at && new Date(d.expires_at) < new Date();
+    const isRevoked = !d.active;
+
+    if (deviceFilter === 'active') return isActive;
+    if (deviceFilter === 'expired') return isExpired;
+    if (deviceFilter === 'revoked') return isRevoked;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><div class="title">لا نتائج</div></div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  renderDevicesInto(filtered, container);
+}
+
+/* ══════════════════════════════════════════════
+   Render Devices
+   ══════════════════════════════════════════════ */
 function renderDevicesInto(devices, container) {
   devices.forEach(d => {
     const card = document.createElement('div');
@@ -1326,10 +1765,22 @@ function renderDevicesInto(devices, container) {
     }
 
     card.innerHTML = `
-      <div class="row"><span class="label">المعرّف:</span><span class="value">${escapeHtml(d.device_id)}</span></div>
-      <div class="row"><span class="label">Chat ID:</span><span class="value">${escapeHtml(String(d.chat_id || ''))}</span></div>
-      <div class="row"><span class="label">المتبقي:</span><span class="value">${durationText}</span></div>
-      <div class="row"><span class="label">الحالة:</span><span class="status ${statusClass}">${statusText}</span></div>
+      <div class="row">
+        <span class="label">المعرّف:</span>
+        <span class="value copyable" onclick="copyText('${escapeHtml(d.device_id)}')">${escapeHtml(d.device_id)}</span>
+      </div>
+      <div class="row">
+        <span class="label">Chat ID:</span>
+        <span class="value copyable" onclick="copyText('${escapeHtml(String(d.chat_id || ''))}')">${escapeHtml(String(d.chat_id || ''))}</span>
+      </div>
+      <div class="row">
+        <span class="label">المتبقي:</span>
+        <span class="value">${durationText}</span>
+      </div>
+      <div class="row">
+        <span class="label">الحالة:</span>
+        <span class="status ${statusClass}">${statusText}</span>
+      </div>
       <div class="device-actions">
         <button class="extend" onclick="extendDevice('${escapeHtml(d.device_id)}', 30)">+ شهر</button>
         <button class="extend" onclick="extendDevice('${escapeHtml(d.device_id)}', 7)">+ أسبوع</button>
@@ -1349,6 +1800,9 @@ function renderDevices(devices, containerId) {
   renderDevicesInto(devices, container);
 }
 
+/* ══════════════════════════════════════════════
+   Extend / Revoke / Delete
+   ══════════════════════════════════════════════ */
 async function extendDevice(deviceId, days) {
   if (!confirm('تجديد ' + days + ' يوم للمعرّف ' + deviceId + '؟')) return;
 
@@ -1392,7 +1846,7 @@ async function extendDevice(deviceId, days) {
 }
 
 async function revokeDevice(deviceId) {
-  if (!confirm('إلغاء تفعيل ' + deviceId + '؟')) return;
+  if (!confirm('إلغاء تفعيل ' + deviceId + '؟\n\nسيتم إيقاف التطبيق على الجهاز.')) return;
 
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/tokens?device_id=eq.'
@@ -1443,7 +1897,321 @@ async function deleteDevice(deviceId) {
 }
 
 /* ══════════════════════════════════════════════
-   🔐 تغيير كلمة المرور (مع Hash)
+   📨 تبويب الرسائل — تحميل قائمة الأجهزة
+   ══════════════════════════════════════════════ */
+async function loadDeviceListForMessages() {
+  const select = document.getElementById('msgDeviceSelect');
+  if (!select) return;
+
+  select.innerHTML = '<option value="">— جاري التحميل —</option>';
+
+  try {
+    const url = SUPABASE_URL + '/rest/v1/tokens?select=device_id,chat_id,active,created_at&order=created_at.desc';
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const devices = await res.json();
+
+    if (devices.length === 0) {
+      select.innerHTML = '<option value="">لا توجد أجهزة</option>';
+      return;
+    }
+
+    select.innerHTML = '<option value="">— اختر جهازاً —</option>';
+    devices.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.device_id;
+      const status = d.active ? '' : ' (ملغى)';
+      const shortId = (d.device_id || '').substring(0, 12);
+      opt.textContent = '📱 ' + shortId + status;
+      select.appendChild(opt);
+    });
+
+  } catch (err) {
+    select.innerHTML = '<option value="">❌ فشل التحميل</option>';
+    console.error(err);
+  }
+}
+
+function onDeviceChange() {
+  const select = document.getElementById('msgDeviceSelect');
+  const deviceId = select.value;
+
+  currentMessageDevice = deviceId;
+
+  const typeField = document.getElementById('msgTypeFilterField');
+  const searchField = document.getElementById('msgSearchField');
+  const buttonsField = document.getElementById('msgButtonsField');
+
+  if (!deviceId) {
+    typeField.style.display = 'none';
+    searchField.style.display = 'none';
+    buttonsField.style.display = 'none';
+    document.getElementById('messagesList').innerHTML = 
+      '<div class="empty-state"><div class="icon">📱</div><div class="title">اختر جهازاً أولاً</div><div class="desc">من القائمة أعلاه لعرض رسائله</div></div>';
+    return;
+  }
+
+  typeField.style.display = 'block';
+  searchField.style.display = 'block';
+  buttonsField.style.display = 'block';
+
+  loadMessages();
+}
+
+function onSearchInput() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => loadMessages(), 500);
+}
+
+async function loadMessages() {
+  if (!currentMessageDevice) return;
+
+  const list = document.getElementById('messagesList');
+  const typeFilter = document.getElementById('msgTypeFilter')?.value || 'all';
+  const search = (document.getElementById('msgSearchInput')?.value || '').trim();
+
+  list.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><div class="title">جاري التحميل...</div></div>';
+
+  try {
+    let url = SUPABASE_URL + '/rest/v1/messages?device_id=eq.' 
+      + encodeURIComponent(currentMessageDevice)
+      + '&order=created_at.desc&limit=200';
+
+    if (typeFilter !== 'all') {
+      url += '&type=eq.' + encodeURIComponent(typeFilter);
+    }
+
+    if (search) {
+      url += '&content=ilike.' + encodeURIComponent('%' + search + '%');
+    }
+
+    const res = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+
+    if (!res.ok) {
+      // الجدول قد لا يكون موجوداً
+      if (res.status === 404) {
+        list.innerHTML = '<div class="empty-state">'
+          + '<div class="icon">📭</div>'
+          + '<div class="title">جدول الرسائل غير موجود</div>'
+          + '<div class="desc">يحتاج التطبيق تعديل خفيف لإرسال الرسائل لـ Supabase<br><br>💡 راجع جلسة ربط الرسائل</div>'
+          + '</div>';
+        return;
+      }
+      throw new Error('HTTP ' + res.status);
+    }
+
+    const messages = await res.json();
+    currentMessages = messages;
+
+    if (messages.length === 0) {
+      list.innerHTML = '<div class="empty-state">'
+        + '<div class="icon">📭</div>'
+        + '<div class="title">لا توجد رسائل</div>'
+        + (search ? '<div class="desc">جرب بحثاً مختلفاً</div>' : '')
+        + '</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+
+    messages.forEach(m => {
+      const item = document.createElement('div');
+      item.className = 'msg-item ' + (m.type || 'notif');
+
+      const icons = {
+        sms: '📨',
+        call: '📞',
+        wa: '💬',
+        voice: '🎙️',
+        notif: '🔔'
+      };
+      const labels = {
+        sms: 'SMS',
+        call: 'مكالمة',
+        wa: 'واتساب',
+        voice: 'صوتية',
+        notif: 'إشعار'
+      };
+
+      const icon = icons[m.type] || '📌';
+      const label = labels[m.type] || m.type;
+
+      let timeText = '';
+      if (m.created_at) {
+        try {
+          const dt = new Date(m.created_at);
+          const diffMin = Math.floor((Date.now() - dt.getTime()) / 60000);
+          if (diffMin < 1) timeText = 'الآن';
+          else if (diffMin < 60) timeText = 'منذ ' + diffMin + ' د';
+          else if (diffMin < 1440) timeText = 'منذ ' + Math.floor(diffMin/60) + ' س';
+          else timeText = Math.floor(diffMin/1440) + ' يوم';
+        } catch (e) {}
+      }
+
+      const direction = m.direction === 'out' ? '📤' : (m.direction === 'in' ? '📥' : '');
+      const from = m.source ? '<div class="msg-from">' + direction + ' ' + escapeHtml(m.source) + '</div>' : '';
+
+      item.innerHTML = `
+        <div class="msg-header">
+          <span class="msg-type">${icon} ${label}</span>
+          <span class="msg-time">${timeText}</span>
+        </div>
+        ${from}
+        <div class="msg-content">${escapeHtml(m.content || '')}</div>
+      `;
+
+      list.appendChild(item);
+    });
+
+  } catch (err) {
+    list.innerHTML = '<div class="empty-state">'
+      + '<div class="icon">❌</div>'
+      + '<div class="title">فشل التحميل</div>'
+      + '<div class="desc">' + escapeHtml(err.message) + '</div>'
+      + '</div>';
+  }
+}
+
+/* ══════════════════════════════════════════════
+   Chart.js — رسم بياني
+   ══════════════════════════════════════════════ */
+function renderChart(active, expired, revoked) {
+  const canvas = document.getElementById('statsChart');
+  if (!canvas) return;
+
+  if (statsChart) {
+    statsChart.destroy();
+  }
+
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const textColor = isDark ? '#e2e8f0' : '#4a5568';
+
+  try {
+    statsChart = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['🟢 نشطة', '⏰ منتهية', '🔴 ملغاة'],
+        datasets: [{
+          data: [active, expired, revoked],
+          backgroundColor: ['#38a169', '#ed8936', '#e53e3e'],
+          borderColor: isDark ? '#2d3748' : '#ffffff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: textColor,
+              font: { family: 'Cairo', size: 12 },
+              padding: 10,
+              usePointStyle: true
+            }
+          },
+          title: {
+            display: true,
+            text: 'توزيع الأجهزة',
+            color: textColor,
+            font: { family: 'Cairo', size: 14, weight: 'bold' }
+          }
+        }
+      }
+    });
+  } catch (e) {
+    console.error('Chart error:', e);
+  }
+}
+
+/* ══════════════════════════════════════════════
+   Export CSV
+   ══════════════════════════════════════════════ */
+function exportDevicesCSV() {
+  if (allDevices.length === 0) {
+    showToast('⚠️ لا توجد أجهزة');
+    return;
+  }
+
+  const rows = [['device_id', 'chat_id', 'active', 'expires_at', 'created_at']];
+  allDevices.forEach(d => {
+    rows.push([
+      d.device_id || '',
+      d.chat_id || '',
+      d.active ? 'true' : 'false',
+      d.expires_at || 'دائم',
+      d.created_at || ''
+    ]);
+  });
+
+  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'hakim_devices_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+
+  showToast('📤 تم التصدير');
+}
+
+function exportMessagesCSV() {
+  if (currentMessages.length === 0) {
+    showToast('⚠️ لا توجد رسائل');
+    return;
+  }
+
+  const rows = [['type', 'direction', 'source', 'content', 'created_at']];
+  currentMessages.forEach(m => {
+    rows.push([
+      m.type || '',
+      m.direction || '',
+      m.source || '',
+      m.content || '',
+      m.created_at || ''
+    ]);
+  });
+
+  const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'hakim_messages_' + currentMessageDevice.substring(0, 12) + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+
+  showToast('📤 تم التصدير');
+}
+
+/* ══════════════════════════════════════════════
+   Refresh All
+   ══════════════════════════════════════════════ */
+function refreshAll() {
+  if (!checkSession()) return;
+  showToast('🔄 جاري التحديث...');
+  updateNewBadge();
+  loadNewDevices();
+  if (document.getElementById('tab-all').classList.contains('active')) {
+    loadAllDevices();
+  }
+  if (document.getElementById('tab-messages').classList.contains('active')) {
+    loadDeviceListForMessages();
+  }
+}
+
+/* ══════════════════════════════════════════════
+   Change Password
    ══════════════════════════════════════════════ */
 async function changePassword() {
   const newPwd = document.getElementById('newPassword').value;
@@ -1461,7 +2229,6 @@ async function changePassword() {
   btn.innerHTML = 'جاري الحفظ... <span class="spinner"></span>';
 
   try {
-    /* ✅ حساب hash قبل الحفظ */
     const hash = await hashPassword(newPwd);
     const storedValue = HASH_PREFIX + hash;
 
@@ -1494,6 +2261,8 @@ async function changePassword() {
    Auto-load
    ══════════════════════════════════════════════ */
 window.onload = function() {
+  loadTheme();
+
   try {
     const saved = localStorage.getItem('hakim_last_device');
     if (saved) {
@@ -1510,6 +2279,11 @@ window.onload = function() {
       try { localStorage.setItem('hakim_last_device', this.value); } catch (e) {}
     });
   }
+
+  // طلب إذن الإشعارات
+  setTimeout(() => {
+    requestNotificationPermission();
+  }, 3000);
 
   if (checkSession()) {
     showMain();
