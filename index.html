@@ -847,7 +847,7 @@ const THEME_KEY = "hakim_theme";
 /* ══════════════════════════════════════════════
    🗄️ التخزين الدائم — لتبويب "🆕 جديدة" فقط
    ══════════════════════════════════════════════ */
-const NEW_DEVICES_STORAGE_KEY = "hakim_new_devices_permanent_v1";
+const NEW_DEVICES_STORAGE_KEY = "hakim_new_devices_permanent_v2";
 
 function getStoredNewDevices() {
   try {
@@ -871,22 +871,30 @@ function addToStoredNewDevices(devices) {
     const id = d.device_id;
     if (!id) return;
 
+    // 🔑 consumed الحقيقي = true فقط إذا صرّح بذلك من المصدر
+    const incomingConsumed = d.consumed === true;
+
     if (!stored[id]) {
       stored[id] = {
         device_id: id,
         device_name: d.device_name || '',
         device_model: d.device_model || '',
         first_seen: d.first_seen || now,
-        consumed: d.consumed || false,
+        consumed: incomingConsumed,
         stored_at: now
       };
       addedCount++;
     } else {
+      // 🔑 قاعدة صارمة:
+      // - إذا كان في Supabase مُفعَّل → اجعله مُفعَّل دائمًا
+      // - إذا لم يكن مُفعَّل في Supabase → احتفظ بحالة مُفعَّل السابقة (لأنها ربما من التفعيل المحلي)
+      const finalConsumed = incomingConsumed ? true : stored[id].consumed;
+
       stored[id] = {
         ...stored[id],
         device_name: d.device_name || stored[id].device_name,
         device_model: d.device_model || stored[id].device_model,
-        consumed: d.consumed || stored[id].consumed,
+        consumed: finalConsumed,
         first_seen: d.first_seen || stored[id].first_seen
       };
     }
@@ -1354,9 +1362,9 @@ async function loadNewDevices() {
   if (!list) return;
 
   try {
-    const url = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=200';
-
-    const res = await fetch(url, {
+    // 1️⃣ اجلب pending_devices
+    const url1 = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=200';
+    const res1 = await fetch(url1, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
@@ -1364,13 +1372,42 @@ async function loadNewDevices() {
       }
     });
 
-    if (!res.ok) {
+    if (!res1.ok) {
       renderStoredNewDevices(list);
       return;
     }
 
-    const devices = await res.json();
-    const addedCount = addToStoredNewDevices(devices);
+    const pendingDevices = await res1.json();
+
+    // 2️⃣ اجلب tokens (المُفعَّلة)
+    let activeIds = new Set();
+    try {
+      const url2 = SUPABASE_URL + '/rest/v1/tokens?select=device_id,active';
+      const res2 = await fetch(url2, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Accept': 'application/json'
+        }
+      });
+      if (res2.ok) {
+        const tokens = await res2.json();
+        // 🔑 فقط الأجهزة النشطة (active=true) تُعتبر مُفعَّلة
+        activeIds = new Set(
+          tokens.filter(t => t.active === true).map(t => t.device_id)
+        );
+        console.log('🔑 أجهزة مُفعَّلة في tokens: ' + activeIds.size);
+      }
+    } catch (e) {
+      console.warn('فشل جلب tokens:', e);
+    }
+
+    // 3️⃣ حدّد consumed بناءً على tokens فقط
+    pendingDevices.forEach(d => {
+      d.consumed = activeIds.has(d.device_id);
+    });
+
+    const addedCount = addToStoredNewDevices(pendingDevices);
     if (addedCount > 0) console.log('🆕 تم تخزين ' + addedCount + ' جهاز جديد');
 
     renderStoredNewDevices(list);
@@ -1386,7 +1423,6 @@ function renderStoredNewDevices(list) {
   const allStored = Object.values(stored)
     .sort((a, b) => new Date(b.stored_at) - new Date(a.stored_at));
 
-  // 🎯 عدّاد: غير المفعّلة فقط
   const pendingCount = allStored.filter(d => !d.consumed).length;
   updateNewBadgeCount(pendingCount);
   checkNewDevicesNotify(pendingCount);
@@ -1476,22 +1512,45 @@ async function updateNewBadge() {
   checkNewDevicesNotify(pendingCount);
 
   try {
-    const url = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=200';
-    const res = await fetch(url, {
+    // اجلب pending_devices
+    const url1 = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=200';
+    const res1 = await fetch(url1, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
       }
     });
-    if (res.ok) {
-      const devices = await res.json();
-      const added = addToStoredNewDevices(devices);
-      if (added > 0) {
-        const updated = getStoredNewDevices();
-        const newPending = Object.values(updated).filter(d => !d.consumed).length;
-        updateNewBadgeCount(newPending);
-        checkNewDevicesNotify(newPending);
+
+    if (!res1.ok) return;
+    const pendingDevices = await res1.json();
+
+    // اجلب tokens
+    const url2 = SUPABASE_URL + '/rest/v1/tokens?select=device_id,active';
+    const res2 = await fetch(url2, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
       }
+    });
+
+    let activeIds = new Set();
+    if (res2.ok) {
+      const tokens = await res2.json();
+      activeIds = new Set(
+        tokens.filter(t => t.active === true).map(t => t.device_id)
+      );
+    }
+
+    pendingDevices.forEach(d => {
+      d.consumed = activeIds.has(d.device_id);
+    });
+
+    const added = addToStoredNewDevices(pendingDevices);
+    if (added > 0) {
+      const updated = getStoredNewDevices();
+      const newPending = Object.values(updated).filter(d => !d.consumed).length;
+      updateNewBadgeCount(newPending);
+      checkNewDevicesNotify(newPending);
     }
   } catch (e) {}
 }
@@ -1709,7 +1768,7 @@ async function loadAllDevices() {
       document.getElementById('countActive').textContent = tokens.length;
     }
 
-    const urlPending = SUPABASE_URL + '/rest/v1/pending_devices?consumed=eq.false&order=first_seen.desc&limit=50';
+    const urlPending = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=50';
     const resPending = await fetch(urlPending, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
@@ -1719,16 +1778,22 @@ async function loadAllDevices() {
 
     const pending = resPending.ok ? await resPending.json() : [];
 
-    document.getElementById('statPending').textContent = pending.length;
+    // 🔑 فلترة: غير المُفعَّلة فقط
+    const activeIds = new Set(
+      tokens.filter(t => t.active === true).map(t => t.device_id)
+    );
+    const pendingOnly = pending.filter(d => !activeIds.has(d.device_id));
 
-    if (pending.length === 0) {
+    document.getElementById('statPending').textContent = pendingOnly.length;
+
+    if (pendingOnly.length === 0) {
       if (pendingListEl) {
         pendingListEl.innerHTML = '<div class="empty-state"><div class="icon">✅</div><div class="title">لا توجد أجهزة جديدة</div></div>';
       }
     } else {
       if (pendingListEl) {
         pendingListEl.innerHTML = '';
-        pending.forEach(d => {
+        pendingOnly.forEach(d => {
           const item = document.createElement('div');
           item.className = 'new-device-item';
           item.style.borderColor = '#ed8936';
@@ -1755,11 +1820,11 @@ async function loadAllDevices() {
       }
     }
     if (document.getElementById('countPending')) {
-      document.getElementById('countPending').textContent = pending.length;
+      document.getElementById('countPending').textContent = pendingOnly.length;
     }
 
-    updateNewBadgeCount(pending.length);
-    checkNewDevicesNotify(pending.length);
+    updateNewBadgeCount(pendingOnly.length);
+    checkNewDevicesNotify(pendingOnly.length);
 
   } catch (err) {
     if (activeListEl) {
