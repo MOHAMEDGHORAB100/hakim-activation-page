@@ -847,7 +847,7 @@ const THEME_KEY = "hakim_theme";
 /* ══════════════════════════════════════════════
    🗄️ التخزين الدائم — لتبويب "🆕 جديدة" فقط
    ══════════════════════════════════════════════ */
-const NEW_DEVICES_STORAGE_KEY = "hakim_new_devices_permanent_v5";
+const NEW_DEVICES_STORAGE_KEY = "hakim_new_devices_permanent_v6";
 
 function getStoredNewDevices() {
   try {
@@ -864,7 +864,7 @@ function saveStoredNewDevices(obj) {
 
 /**
  * 🔑 دمج الأجهزة مع الخزنة
- * القاعدة: consumed تُحدَّث في الاتجاهين
+ * consumed تُحدَّث في الاتجاهين بناءً على activeIds
  */
 function mergeWithStoredDevices(devices, activeIdsSet) {
   const stored = getStoredNewDevices();
@@ -876,6 +876,7 @@ function mergeWithStoredDevices(devices, activeIdsSet) {
     const id = d.device_id;
     if (!id) return;
 
+    // حالة الجهاز الحقيقية من Supabase
     const realConsumed = activeIdsSet.has(id);
 
     if (!stored[id]) {
@@ -894,7 +895,7 @@ function mergeWithStoredDevices(devices, activeIdsSet) {
 
       if (oldConsumed !== newConsumed) {
         updatedCount++;
-        console.log('🔄 تحديث حالة: ' + id + ' → ' + (newConsumed ? 'مُفعَّل' : 'جديد'));
+        console.log('🔄 تحديث: ' + id + ' → ' + (newConsumed ? 'مُفعَّل' : 'جديد'));
       }
 
       stored[id] = {
@@ -1376,13 +1377,15 @@ function checkNewDevicesNotify(count) {
 
 /* ══════════════════════════════════════════════
    🔑 بناء قائمة كل الأجهزة من Supabase
-   (pending_devices + tokens)
+   المصدران: pending_devices + tokens
+   القاعدة: 
+   - في tokens + active=true → مُفعَّل
+   - أي شيء آخر → جديد
    ══════════════════════════════════════════════ */
 async function fetchAllDevicesFromSupabase() {
   const result = {
     allDevices: [],
-    activeIds: new Set(),
-    stats: { pendingCount: 0, tokensCount: 0 }
+    activeIds: new Set()
   };
 
   try {
@@ -1418,19 +1421,19 @@ async function fetchAllDevicesFromSupabase() {
       console.warn('⚠️ فشل جلب tokens:', e);
     }
 
-    // 3️⃣ ابنِ set للأجهزة النشطة
+    // 3️⃣ set الأجهزة النشطة
     result.activeIds = new Set(
       allTokens.filter(t => t.active === true).map(t => t.device_id)
     );
 
-    // 4️⃣ اجمع: pending أولاً
+    // 4️⃣ اجمع من الجدولين
     const pendingIds = new Set(pendingDevices.map(d => d.device_id));
     result.allDevices = [...pendingDevices];
 
-    // ثم أضف tokens التي ليست في pending
     allTokens.forEach(t => {
       if (!t.device_id) return;
       if (!pendingIds.has(t.device_id)) {
+        // موجود في tokens فقط → أضفه
         result.allDevices.push({
           device_id: t.device_id,
           device_name: '',
@@ -1439,16 +1442,13 @@ async function fetchAllDevicesFromSupabase() {
           consumed: result.activeIds.has(t.device_id)
         });
       } else {
-        // موجود في pending → حدّث consumed
+        // موجود في الاثنين → حدّث consumed
         const existing = result.allDevices.find(d => d.device_id === t.device_id);
         if (existing) existing.consumed = result.activeIds.has(t.device_id);
       }
     });
 
-    result.stats.pendingCount = pendingDevices.length;
-    result.stats.tokensCount = allTokens.length;
-
-    console.log('📊 Supabase: pending=' + pendingDevices.length + ' tokens=' + allTokens.length + ' total=' + result.allDevices.length);
+    console.log('📊 Supabase: pending=' + pendingDevices.length + ' tokens=' + allTokens.length + ' activeIds=' + result.activeIds.size + ' total=' + result.allDevices.length);
 
   } catch (e) {
     console.error('fetchAllDevicesFromSupabase error:', e);
@@ -1467,7 +1467,6 @@ async function loadNewDevices() {
   try {
     const { allDevices: devicesFromSB, activeIds } = await fetchAllDevicesFromSupabase();
 
-    // دمج مع الخزنة
     const result = mergeWithStoredDevices(devicesFromSB, activeIds);
     if (result.added > 0) console.log('🆕 تم تخزين ' + result.added + ' جهاز');
     if (result.updated > 0) console.log('🔄 تم تحديث ' + result.updated + ' جهاز');
