@@ -878,8 +878,7 @@ function addToStoredNewDevices(devices) {
         device_model: d.device_model || '',
         first_seen: d.first_seen || now,
         consumed: d.consumed || false,
-        stored_at: now,
-        is_new: true
+        stored_at: now
       };
       addedCount++;
     } else {
@@ -905,19 +904,10 @@ function removeFromStoredNewDevices(deviceId) {
   }
 }
 
-function clearNewFlag(deviceId) {
-  const stored = getStoredNewDevices();
-  if (stored[deviceId]) {
-    stored[deviceId].is_new = false;
-    saveStoredNewDevices(stored);
-  }
-}
-
 function markAsConsumed(deviceId) {
   const stored = getStoredNewDevices();
   if (stored[deviceId]) {
     stored[deviceId].consumed = true;
-    stored[deviceId].is_new = false;
     saveStoredNewDevices(stored);
   }
 }
@@ -1416,11 +1406,12 @@ function renderStoredNewDevices(list) {
     item.className = 'new-device-item';
     item.setAttribute('data-device-id', d.device_id);
 
-    if (d.is_new) {
+    if (!d.consumed) {
+      // 🟠 جديد — لم يُفعَّل بعد
       item.style.borderColor = '#ed8936';
       item.style.background = 'linear-gradient(135deg, #fffaf0, #fff5e6)';
-    }
-    if (d.consumed) {
+    } else {
+      // ✅ مُفعَّل
       item.style.opacity = '0.6';
       item.style.borderColor = '#38a169';
     }
@@ -1454,10 +1445,6 @@ function renderStoredNewDevices(list) {
         <button class="delete-btn" onclick="deleteNewDevice('${escapeHtml(deviceId)}')">🗑️</button>
       </div>
     `;
-
-    item.addEventListener('click', () => {
-      if (d.is_new) clearNewFlag(deviceId);
-    }, { once: true });
 
     list.appendChild(item);
   });
