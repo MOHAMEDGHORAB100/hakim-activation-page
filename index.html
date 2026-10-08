@@ -862,7 +862,6 @@ function saveStoredNewDevices(obj) {
   } catch (e) { console.warn('⚠️ فشل التخزين:', e); }
 }
 
-/* إضافة أجهزة للخزنة — لا يحذف الموجود أبدًا */
 function addToStoredNewDevices(devices) {
   const stored = getStoredNewDevices();
   const now = new Date().toISOString();
@@ -1365,7 +1364,6 @@ async function loadNewDevices() {
   if (!list) return;
 
   try {
-    // 1️⃣ اجلب من Supabase
     const url = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=200';
 
     const res = await fetch(url, {
@@ -1377,20 +1375,14 @@ async function loadNewDevices() {
     });
 
     if (!res.ok) {
-      // فشل الاتصال → اعرض المخزّن فقط
       renderStoredNewDevices(list);
       return;
     }
 
     const devices = await res.json();
-
-    // 2️⃣ أضف الجديد للخزنة (لا يحذف الموجود)
     const addedCount = addToStoredNewDevices(devices);
-    if (addedCount > 0) {
-      console.log('🆕 تم تخزين ' + addedCount + ' جهاز جديد');
-    }
+    if (addedCount > 0) console.log('🆕 تم تخزين ' + addedCount + ' جهاز جديد');
 
-    // 3️⃣ اعرض من الخزنة
     renderStoredNewDevices(list);
 
   } catch (e) {
@@ -1399,7 +1391,6 @@ async function loadNewDevices() {
   }
 }
 
-/* 🎨 عرض الأجهزة المخزّنة */
 function renderStoredNewDevices(list) {
   const stored = getStoredNewDevices();
   const allDevices = Object.values(stored)
@@ -1429,7 +1420,6 @@ function renderStoredNewDevices(list) {
       item.style.borderColor = '#ed8936';
       item.style.background = 'linear-gradient(135deg, #fffaf0, #fff5e6)';
     }
-
     if (d.consumed) {
       item.style.opacity = '0.6';
       item.style.borderColor = '#38a169';
@@ -1485,13 +1475,11 @@ function updateNewBadgeCount(count) {
 }
 
 async function updateNewBadge() {
-  // احسب من الخزنة مباشرة
   const stored = getStoredNewDevices();
   const pendingCount = Object.values(stored).filter(d => !d.consumed).length;
   updateNewBadgeCount(pendingCount);
   checkNewDevicesNotify(pendingCount);
 
-  // جلب من Supabase بالخلفية
   try {
     const url = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=200';
     const res = await fetch(url, {
@@ -1524,10 +1512,8 @@ function useNewDevice(deviceId) {
 async function deleteNewDevice(deviceId) {
   if (!confirm('حذف الجهاز ' + deviceId + ' من القائمة المخزّنة؟')) return;
 
-  // 1️⃣ احذف من الخزنة الدائمة
   removeFromStoredNewDevices(deviceId);
 
-  // 2️⃣ احذف من Supabase
   try {
     await fetch(SUPABASE_URL + '/rest/v1/pending_devices?device_id=eq.'
       + encodeURIComponent(deviceId), {
@@ -1655,7 +1641,7 @@ async function activate() {
 }
 
 /* ══════════════════════════════════════════════
-   إدارة الأجهزة (بدون تخزين — يقرأ من Supabase مباشرة)
+   إدارة الأجهزة
    ══════════════════════════════════════════════ */
 async function loadDevices() {
   const deviceId = document.getElementById('manageDeviceId').value.trim();
