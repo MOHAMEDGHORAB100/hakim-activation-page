@@ -316,7 +316,7 @@ body {
   transform: translateY(-2px);
 }
 .new-device-item .info { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-.new-device-item .info .name { font-size: 15px; font-weight: 700; color: #1e5ba8; }
+.new-device-item .info .name { font-size: 15px; font-weight: 700; color: #1e5ba8; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 [data-theme="dark"] .new-device-item .info .name { color: #63b3ed; }
 .new-device-item .info .id {
   font-size: 12px;
@@ -660,7 +660,7 @@ body {
       <div id="tab-new" class="tab-content">
         <div class="new-devices-header">
           <h2>🆕 الأجهزة الجديدة</h2>
-          <p>💾 مخزّنة بشكل دائم — أرسلت معرّفها تلقائياً</p>
+          <p>💾 مخزّنة بشكل دائم — الجديد يبقى حتى يُفعَّل</p>
         </div>
 
         <div id="newDevicesList">
@@ -1383,37 +1383,41 @@ async function loadNewDevices() {
 
 function renderStoredNewDevices(list) {
   const stored = getStoredNewDevices();
-  const allDevices = Object.values(stored)
+  const allStored = Object.values(stored)
     .sort((a, b) => new Date(b.stored_at) - new Date(a.stored_at));
 
-  const pendingCount = allDevices.filter(d => !d.consumed).length;
+  // 🎯 عدّاد: غير المفعّلة فقط
+  const pendingCount = allStored.filter(d => !d.consumed).length;
   updateNewBadgeCount(pendingCount);
   checkNewDevicesNotify(pendingCount);
 
-  if (allDevices.length === 0) {
+  if (allStored.length === 0) {
     list.innerHTML = '<div class="empty-state">'
       + '<div class="icon">✅</div>'
-      + '<div class="title">لا توجد أجهزة جديدة</div>'
-      + '<div class="desc">كل الأجهزة مُفعَّلة حالياً</div>'
+      + '<div class="title">لا توجد أجهزة في القائمة</div>'
+      + '<div class="desc">كل الأجهزة مُفعَّلة أو محذوفة</div>'
       + '</div>';
     return;
   }
 
   list.innerHTML = '';
 
-  allDevices.forEach(d => {
+  allStored.forEach(d => {
+    const isConsumed = d.consumed === true;
+
     const item = document.createElement('div');
     item.className = 'new-device-item';
     item.setAttribute('data-device-id', d.device_id);
 
-    if (!d.consumed) {
+    if (!isConsumed) {
       // 🟠 جديد — لم يُفعَّل بعد
       item.style.borderColor = '#ed8936';
       item.style.background = 'linear-gradient(135deg, #fffaf0, #fff5e6)';
     } else {
-      // ✅ مُفعَّل
-      item.style.opacity = '0.6';
+      // ✅ مُفعَّل — باهت مع علامة خضراء
+      item.style.opacity = '0.65';
       item.style.borderColor = '#38a169';
+      item.style.background = 'linear-gradient(135deg, #f0fff4, #e6ffed)';
     }
 
     const deviceName = d.device_name || d.device_id || 'جهاز';
@@ -1433,15 +1437,19 @@ function renderStoredNewDevices(list) {
       } catch (e) {}
     }
 
+    const statusBadge = isConsumed
+      ? '<span style="background:#38a169;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;">✅ مُفعَّل</span>'
+      : '<span style="background:#ed8936;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;">🆕 جديد</span>';
+
     item.innerHTML = `
       <div class="info">
-        <div class="name">📱 ${escapeHtml(deviceName)} ${d.consumed ? '✅' : ''}</div>
+        <div class="name">${statusBadge} <span>📱 ${escapeHtml(deviceName)}</span></div>
         <div class="id" onclick="copyText('${escapeHtml(deviceId)}')" title="اضغط للنسخ">${escapeHtml(deviceId)}</div>
         ${deviceModel ? `<div class="model">${escapeHtml(deviceModel)}</div>` : ''}
         ${timeText ? `<div class="time">⏱️ ${escapeHtml(timeText)}</div>` : ''}
       </div>
       <div class="actions">
-        ${!d.consumed ? `<button class="use-btn" onclick="useNewDevice('${escapeHtml(deviceId)}')">✅ استخدام</button>` : ''}
+        ${!isConsumed ? `<button class="use-btn" onclick="useNewDevice('${escapeHtml(deviceId)}')">✅ استخدام</button>` : ''}
         <button class="delete-btn" onclick="deleteNewDevice('${escapeHtml(deviceId)}')">🗑️</button>
       </div>
     `;
@@ -1723,6 +1731,8 @@ async function loadAllDevices() {
         pending.forEach(d => {
           const item = document.createElement('div');
           item.className = 'new-device-item';
+          item.style.borderColor = '#ed8936';
+          item.style.background = 'linear-gradient(135deg, #fffaf0, #fff5e6)';
 
           const deviceName = d.device_name || d.device_id || 'جهاز';
           const deviceId = d.device_id || '';
@@ -1730,7 +1740,7 @@ async function loadAllDevices() {
 
           item.innerHTML = `
             <div class="info">
-              <div class="name">📱 ${escapeHtml(deviceName)}</div>
+              <div class="name"><span style="background:#ed8936;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;">🆕 جديد</span> <span>📱 ${escapeHtml(deviceName)}</span></div>
               <div class="id" onclick="copyText('${escapeHtml(deviceId)}')">${escapeHtml(deviceId)}</div>
               ${deviceModel ? `<div class="model">${escapeHtml(deviceModel)}</div>` : ''}
             </div>
