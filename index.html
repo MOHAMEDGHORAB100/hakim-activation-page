@@ -847,7 +847,7 @@ const THEME_KEY = "hakim_theme";
 /* ══════════════════════════════════════════════
    🗄️ التخزين الدائم — لتبويب "🆕 جديدة" فقط
    ══════════════════════════════════════════════ */
-const NEW_DEVICES_STORAGE_KEY = "hakim_new_devices_permanent_v4";
+const NEW_DEVICES_STORAGE_KEY = "hakim_new_devices_permanent_v5";
 
 function getStoredNewDevices() {
   try {
@@ -865,8 +865,6 @@ function saveStoredNewDevices(obj) {
 /**
  * 🔑 دمج الأجهزة مع الخزنة
  * القاعدة: consumed تُحدَّث في الاتجاهين
- * - إذا كان في tokens نشط → true
- * - إذا لم يكن في tokens نشط → false (حتى لو كان true سابقاً)
  */
 function mergeWithStoredDevices(devices, activeIdsSet) {
   const stored = getStoredNewDevices();
@@ -878,7 +876,6 @@ function mergeWithStoredDevices(devices, activeIdsSet) {
     const id = d.device_id;
     if (!id) return;
 
-    // حالة consumed الحقيقية من Supabase
     const realConsumed = activeIdsSet.has(id);
 
     if (!stored[id]) {
@@ -892,9 +889,6 @@ function mergeWithStoredDevices(devices, activeIdsSet) {
       };
       addedCount++;
     } else {
-      // 🔑 القاعدة الجديدة: consumed تُحدَّث دائماً بناءً على Supabase
-      // إذا كان نشطاً في tokens → true
-      // إذا لم يعد نشطاً (حُذف أو ملغى) → false
       const oldConsumed = stored[id].consumed === true;
       const newConsumed = realConsumed;
 
@@ -925,7 +919,6 @@ function removeFromStoredNewDevices(deviceId) {
   }
 }
 
-// تعليم جهاز كمُفعَّل مباشرة (يُستخدم بعد نجاح التفعيل)
 function markAsConsumed(deviceId) {
   const stored = getStoredNewDevices();
   if (stored[deviceId]) {
@@ -1382,25 +1375,86 @@ function checkNewDevicesNotify(count) {
 }
 
 /* ══════════════════════════════════════════════
-   جلب حالة المُفعَّلة من Supabase
+   🔑 بناء قائمة كل الأجهزة من Supabase
+   (pending_devices + tokens)
    ══════════════════════════════════════════════ */
-async function fetchActiveDeviceIds() {
+async function fetchAllDevicesFromSupabase() {
+  const result = {
+    allDevices: [],
+    activeIds: new Set(),
+    stats: { pendingCount: 0, tokensCount: 0 }
+  };
+
   try {
-    const url = SUPABASE_URL + '/rest/v1/tokens?select=device_id,active&active=eq.true';
-    const res = await fetch(url, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Accept': 'application/json'
+    // 1️⃣ اجلب pending_devices
+    let pendingDevices = [];
+    try {
+      const url1 = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=1000';
+      const res1 = await fetch(url1, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Accept': 'application/json'
+        }
+      });
+      if (res1.ok) pendingDevices = await res1.json();
+    } catch (e) {
+      console.warn('⚠️ فشل جلب pending_devices:', e);
+    }
+
+    // 2️⃣ اجلب كل tokens
+    let allTokens = [];
+    try {
+      const url2 = SUPABASE_URL + '/rest/v1/tokens?select=device_id,active,created_at&limit=1000';
+      const res2 = await fetch(url2, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Accept': 'application/json'
+        }
+      });
+      if (res2.ok) allTokens = await res2.json();
+    } catch (e) {
+      console.warn('⚠️ فشل جلب tokens:', e);
+    }
+
+    // 3️⃣ ابنِ set للأجهزة النشطة
+    result.activeIds = new Set(
+      allTokens.filter(t => t.active === true).map(t => t.device_id)
+    );
+
+    // 4️⃣ اجمع: pending أولاً
+    const pendingIds = new Set(pendingDevices.map(d => d.device_id));
+    result.allDevices = [...pendingDevices];
+
+    // ثم أضف tokens التي ليست في pending
+    allTokens.forEach(t => {
+      if (!t.device_id) return;
+      if (!pendingIds.has(t.device_id)) {
+        result.allDevices.push({
+          device_id: t.device_id,
+          device_name: '',
+          device_model: '',
+          first_seen: t.created_at || new Date().toISOString(),
+          consumed: result.activeIds.has(t.device_id)
+        });
+      } else {
+        // موجود في pending → حدّث consumed
+        const existing = result.allDevices.find(d => d.device_id === t.device_id);
+        if (existing) existing.consumed = result.activeIds.has(t.device_id);
       }
     });
-    if (!res.ok) return new Set();
-    const tokens = await res.json();
-    return new Set(tokens.map(t => t.device_id));
+
+    result.stats.pendingCount = pendingDevices.length;
+    result.stats.tokensCount = allTokens.length;
+
+    console.log('📊 Supabase: pending=' + pendingDevices.length + ' tokens=' + allTokens.length + ' total=' + result.allDevices.length);
+
   } catch (e) {
-    console.warn('فشل جلب الأجهزة المُفعَّلة:', e);
-    return new Set();
+    console.error('fetchAllDevicesFromSupabase error:', e);
   }
+
+  return result;
 }
 
 /* ══════════════════════════════════════════════
@@ -1411,33 +1465,11 @@ async function loadNewDevices() {
   if (!list) return;
 
   try {
-    const url1 = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=200';
-    const res1 = await fetch(url1, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Accept': 'application/json'
-      }
-    });
+    const { allDevices: devicesFromSB, activeIds } = await fetchAllDevicesFromSupabase();
 
-    if (!res1.ok) {
-      renderStoredNewDevices(list);
-      return;
-    }
-
-    const pendingDevices = await res1.json();
-
-    // 🔑 اجلب الأجهزة النشطة فقط
-    const activeIds = await fetchActiveDeviceIds();
-    console.log('🔑 أجهزة نشطة: ' + activeIds.size);
-
-    // حدّد consumed بناءً على tokens النشطة
-    pendingDevices.forEach(d => {
-      d.consumed = activeIds.has(d.device_id);
-    });
-
-    const result = mergeWithStoredDevices(pendingDevices, activeIds);
-    if (result.added > 0) console.log('🆕 تم تخزين ' + result.added + ' جهاز جديد');
+    // دمج مع الخزنة
+    const result = mergeWithStoredDevices(devicesFromSB, activeIds);
+    if (result.added > 0) console.log('🆕 تم تخزين ' + result.added + ' جهاز');
     if (result.updated > 0) console.log('🔄 تم تحديث ' + result.updated + ' جهاز');
 
     renderStoredNewDevices(list);
@@ -1540,23 +1572,8 @@ async function updateNewBadge() {
   checkNewDevicesNotify(pendingCount);
 
   try {
-    const url1 = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=200';
-    const res1 = await fetch(url1, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-      }
-    });
-
-    if (!res1.ok) return;
-    const pendingDevices = await res1.json();
-
-    const activeIds = await fetchActiveDeviceIds();
-    pendingDevices.forEach(d => {
-      d.consumed = activeIds.has(d.device_id);
-    });
-
-    const result = mergeWithStoredDevices(pendingDevices, activeIds);
+    const { allDevices: devicesFromSB, activeIds } = await fetchAllDevicesFromSupabase();
+    const result = mergeWithStoredDevices(devicesFromSB, activeIds);
     if (result.added > 0 || result.updated > 0) {
       const updated = getStoredNewDevices();
       const newPending = Object.values(updated).filter(d => !d.consumed).length;
@@ -1810,7 +1827,6 @@ async function loadAllDevices() {
 
     const pending = resPending.ok ? await resPending.json() : [];
 
-    // 🔑 الأجهزة النشطة فقط
     const activeIds = new Set(
       tokens.filter(t => t.active === true).map(t => t.device_id)
     );
@@ -1978,7 +1994,7 @@ function renderDevices(devices, containerId) {
 }
 
 /* ══════════════════════════════════════════════
-   Extend / Revoke / Delete — مع تحديث الخزنة
+   Extend / Revoke / Delete
    ══════════════════════════════════════════════ */
 async function extendDevice(deviceId, days) {
   if (!confirm('تجديد ' + days + ' يوم للمعرّف ' + deviceId + '؟')) return;
@@ -2013,7 +2029,6 @@ async function extendDevice(deviceId, days) {
 
     if (!res2.ok) throw new Error('HTTP ' + res2.status);
 
-    // 🔑 علّم كمُفعَّل في الخزنة
     markAsConsumed(deviceId);
 
     showToast('✅ تم التجديد +' + days + ' يوم');
@@ -2044,7 +2059,6 @@ async function revokeDevice(deviceId) {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    // 🔑 أعد تعليمه كغير مُفعَّل في الخزنة
     const stored = getStoredNewDevices();
     if (stored[deviceId]) {
       stored[deviceId].consumed = false;
@@ -2076,7 +2090,6 @@ async function deleteDevice(deviceId) {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    // 🔑 أعد تعليمه كغير مُفعَّل في الخزنة
     const stored = getStoredNewDevices();
     if (stored[deviceId]) {
       stored[deviceId].consumed = false;
