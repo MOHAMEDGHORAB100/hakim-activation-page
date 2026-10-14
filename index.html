@@ -845,9 +845,9 @@ const ATTEMPTS_KEY = "hakim_login_attempts";
 const THEME_KEY = "hakim_theme";
 
 /* ══════════════════════════════════════════════
-   🗄️ التخزين الدائم — لتبويب "🆕 جديدة" فقط
+   🗄️ التخزين الدائم
    ══════════════════════════════════════════════ */
-const NEW_DEVICES_STORAGE_KEY = "hakim_new_devices_permanent_v6";
+const NEW_DEVICES_STORAGE_KEY = "hakim_new_devices_permanent_v7";
 
 function getStoredNewDevices() {
   try {
@@ -863,8 +863,11 @@ function saveStoredNewDevices(obj) {
 }
 
 /**
- * 🔑 دمج الأجهزة مع الخزنة
- * consumed تُحدَّث في الاتجاهين بناءً على activeIds
+ * ✅ V7.0: دمج محسّن — لا يستبدل
+ *
+ * ⚠️ السبب القديم للمشكلة:
+ *  - "merged-duplicates" في Supabase كان يستبدل
+ *  - الآن: كل device_id مختلف → لا استبدال
  */
 function mergeWithStoredDevices(devices, activeIdsSet) {
   const stored = getStoredNewDevices();
@@ -872,11 +875,14 @@ function mergeWithStoredDevices(devices, activeIdsSet) {
   let addedCount = 0;
   let updatedCount = 0;
 
+  console.log('🔍 mergeWithStoredDevices:');
+  console.log('  أجهزة من Supabase:', devices.length);
+  console.log('  موجودة في localStorage:', Object.keys(stored).length);
+
   devices.forEach(d => {
     const id = d.device_id;
     if (!id) return;
 
-    // حالة الجهاز الحقيقية من Supabase
     const realConsumed = activeIdsSet.has(id);
 
     if (!stored[id]) {
@@ -889,13 +895,14 @@ function mergeWithStoredDevices(devices, activeIdsSet) {
         stored_at: now
       };
       addedCount++;
+      console.log('  ✅ أُضيف جديد:', id, '| اسم:', d.device_name);
     } else {
       const oldConsumed = stored[id].consumed === true;
       const newConsumed = realConsumed;
 
       if (oldConsumed !== newConsumed) {
         updatedCount++;
-        console.log('🔄 تحديث: ' + id + ' → ' + (newConsumed ? 'مُفعَّل' : 'جديد'));
+        console.log('  🔄 تحديث حالة:', id, '→', newConsumed ? 'مُفعَّل' : 'جديد');
       }
 
       stored[id] = {
@@ -909,6 +916,7 @@ function mergeWithStoredDevices(devices, activeIdsSet) {
   });
 
   saveStoredNewDevices(stored);
+  console.log('📊 النتيجة: أُضيف', addedCount, '| حُدّث', updatedCount, '| إجمالي', Object.keys(stored).length);
   return { added: addedCount, updated: updatedCount };
 }
 
@@ -1376,11 +1384,7 @@ function checkNewDevicesNotify(count) {
 }
 
 /* ══════════════════════════════════════════════
-   🔑 بناء قائمة كل الأجهزة من Supabase
-   المصدران: pending_devices + tokens
-   القاعدة: 
-   - في tokens + active=true → مُفعَّل
-   - أي شيء آخر → جديد
+   🔑 بناء قائمة كل الأجهزة
    ══════════════════════════════════════════════ */
 async function fetchAllDevicesFromSupabase() {
   const result = {
@@ -1433,7 +1437,6 @@ async function fetchAllDevicesFromSupabase() {
     allTokens.forEach(t => {
       if (!t.device_id) return;
       if (!pendingIds.has(t.device_id)) {
-        // موجود في tokens فقط → أضفه
         result.allDevices.push({
           device_id: t.device_id,
           device_name: '',
@@ -1442,7 +1445,6 @@ async function fetchAllDevicesFromSupabase() {
           consumed: result.activeIds.has(t.device_id)
         });
       } else {
-        // موجود في الاثنين → حدّث consumed
         const existing = result.allDevices.find(d => d.device_id === t.device_id);
         if (existing) existing.consumed = result.activeIds.has(t.device_id);
       }
@@ -1487,6 +1489,12 @@ function renderStoredNewDevices(list) {
   const pendingCount = allStored.filter(d => !d.consumed).length;
   updateNewBadgeCount(pendingCount);
   checkNewDevicesNotify(pendingCount);
+
+  // ✅ سجل تشخيصي
+  console.log('🖼️ renderStoredNewDevices:');
+  console.log('  إجمالي:', allStored.length);
+  console.log('  جديد:', pendingCount);
+  console.log('  مفعّل:', allStored.length - pendingCount);
 
   if (allStored.length === 0) {
     list.innerHTML = '<div class="empty-state">'
