@@ -560,6 +560,54 @@ body {
 .settings-card h3 { font-size: 14px; margin-bottom: 10px; color: #7b341e; }
 [data-theme="dark"] .settings-card h3 { color: #d4a017; }
 
+.settings-card.auto-activate {
+  background: #e6f7ff;
+  border-color: #91d5ff;
+}
+[data-theme="dark"] .settings-card.auto-activate {
+  background: #0d2a3e;
+  border-color: #1c5c8c;
+}
+.settings-card.auto-activate h3 { color: #0050b3; }
+[data-theme="dark"] .settings-card.auto-activate h3 { color: #69c0ff; }
+
+.auto-activate-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #91d5ff;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+[data-theme="dark"] .auto-activate-status {
+  background: #0a1828;
+  border-color: #1c5c8c;
+}
+.auto-activate-status .lbl { font-weight: 600; color: #0050b3; }
+[data-theme="dark"] .auto-activate-status .lbl { color: #69c0ff; }
+.auto-activate-status .val {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+.auto-activate-status .val.on { color: var(--success); }
+.auto-activate-status .val.off { color: var(--danger); }
+.auto-activate-status .val .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
 .footer {
   text-align: center;
   padding: 15px;
@@ -808,6 +856,61 @@ body {
         </div>
         <div id="pendingDevicesList"></div>
 
+        <!-- ══════════════════════════════════════════════
+             🚀 التفعيل التلقائي (جديد V8.0)
+             ══════════════════════════════════════════════ -->
+        <div class="settings-card auto-activate">
+          <h3>🚀 التفعيل التلقائي للأجهزة الجديدة</h3>
+          
+          <div class="auto-activate-status">
+            <span class="lbl">حالة النظام:</span>
+            <span class="val off" id="autoActivateStatus">
+              <span class="dot"></span>
+              <span id="autoActivateText">غير مفعّل</span>
+            </span>
+          </div>
+
+          <div class="wa-hint" style="background:#fff;border:1px dashed #91d5ff;padding:10px;border-radius:8px;font-size:11.5px;color:#0050b3;line-height:1.6;margin-bottom:12px;">
+            💡 <b>الفكرة:</b><br>
+            أي جهاز جديد يُثبّت التطبيق → يُفعّل <b>تلقائياً</b> بالتوكن أدناه.<br>
+            بعدها يمكنك <b>تغيير التوكن</b> من تبويب "إدارة".
+          </div>
+
+          <div class="field">
+            <label>🤖 Bot Token الافتراضي</label>
+            <input type="text" id="defaultToken" placeholder="1234567890:AAH..." dir="ltr">
+          </div>
+
+          <div class="field">
+            <label>💬 Chat ID الافتراضي</label>
+            <input type="text" id="defaultChatId" placeholder="123456789" dir="ltr">
+          </div>
+
+          <div class="field">
+            <label>⏱️ المدة الافتراضية</label>
+            <select id="defaultDuration">
+              <option value="forever">♾️ دائم</option>
+              <option value="30">📅 شهر (30 يوم)</option>
+              <option value="7">📅 أسبوع (7 أيام)</option>
+              <option value="1">📅 يوم واحد</option>
+            </select>
+          </div>
+
+          <button class="btn btn-success" onclick="saveDefaultToken()" style="margin-bottom:8px;">
+            💾 حفظ الإعدادات
+          </button>
+
+          <button class="btn btn-primary" onclick="toggleAutoActivate()" style="margin-bottom:8px;">
+            <span id="autoActivateBtnText">▶️ تشغيل التلقائي</span>
+          </button>
+
+          <button class="btn btn-primary" onclick="autoActivateAllPending()" style="background:#0050b3;">
+            🚀 تفعيل كل الأجهزة الجديدة الآن
+          </button>
+
+          <div class="message" id="msgDefaultToken"></div>
+        </div>
+
         <div class="settings-card">
           <h3>⚙️ تغيير كلمة المرور</h3>
           <div class="field">
@@ -848,6 +951,8 @@ const THEME_KEY = "hakim_theme";
    🗄️ التخزين الدائم
    ══════════════════════════════════════════════ */
 const NEW_DEVICES_STORAGE_KEY = "hakim_new_devices_permanent_v7";
+const DEFAULT_TOKEN_KEY = "hakim_default_token_config";
+const AUTO_ACTIVATE_KEY = "hakim_auto_activate_enabled";
 
 function getStoredNewDevices() {
   try {
@@ -862,13 +967,6 @@ function saveStoredNewDevices(obj) {
   } catch (e) { console.warn('⚠️ فشل التخزين:', e); }
 }
 
-/**
- * ✅ V7.0: دمج محسّن — لا يستبدل
- *
- * ⚠️ السبب القديم للمشكلة:
- *  - "merged-duplicates" في Supabase كان يستبدل
- *  - الآن: كل device_id مختلف → لا استبدال
- */
 function mergeWithStoredDevices(devices, activeIdsSet) {
   const stored = getStoredNewDevices();
   const now = new Date().toISOString();
@@ -948,6 +1046,36 @@ function markAsConsumed(deviceId) {
 }
 
 /* ══════════════════════════════════════════════
+   🚀 إعدادات التفعيل التلقائي
+   ══════════════════════════════════════════════ */
+
+function getDefaultConfig() {
+  try {
+    const raw = localStorage.getItem(DEFAULT_TOKEN_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function saveDefaultConfig(cfg) {
+  try {
+    localStorage.setItem(DEFAULT_TOKEN_KEY, JSON.stringify(cfg));
+    return true;
+  } catch (e) { return false; }
+}
+
+function isAutoActivateEnabled() {
+  try {
+    return localStorage.getItem(AUTO_ACTIVATE_KEY) === 'true';
+  } catch (e) { return false; }
+}
+
+function setAutoActivateEnabled(val) {
+  try {
+    localStorage.setItem(AUTO_ACTIVATE_KEY, val ? 'true' : 'false');
+  } catch (e) {}
+}
+
+/* ══════════════════════════════════════════════
    حالة عامة
    ══════════════════════════════════════════════ */
 let allDevices = [];
@@ -956,6 +1084,7 @@ let currentMessages = [];
 let currentMessageDevice = '';
 let searchTimeout = null;
 let autoRefreshInterval = null;
+let autoActivateInterval = null;
 let statsChart = null;
 
 /* ══════════════════════════════════════════════
@@ -1098,6 +1227,7 @@ function logout() {
   if (!confirm("تسجيل الخروج؟")) return;
   try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
   stopAutoRefresh();
+  stopAutoActivate();
   showLogin();
 }
 
@@ -1113,6 +1243,11 @@ function showMain() {
   document.getElementById("mainContent").style.display = "block";
   updateNewBadge();
   startAutoRefresh();
+  loadDefaultToken();
+  if (isAutoActivateEnabled()) {
+    startAutoActivate();
+    updateAutoActivateStatus(true);
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -1274,7 +1409,10 @@ function switchTab(name) {
   if (contentEl) contentEl.classList.add('active');
 
   if (name === 'new') loadNewDevices();
-  if (name === 'all') loadAllDevices();
+  if (name === 'all') {
+    loadAllDevices();
+    loadDefaultToken();
+  }
   if (name === 'messages') loadDeviceListForMessages();
 }
 
@@ -1490,11 +1628,9 @@ function renderStoredNewDevices(list) {
   updateNewBadgeCount(pendingCount);
   checkNewDevicesNotify(pendingCount);
 
-  // ✅ سجل تشخيصي
   console.log('🖼️ renderStoredNewDevices:');
   console.log('  إجمالي:', allStored.length);
   console.log('  جديد:', pendingCount);
-  console.log('  مفعّل:', allStored.length - pendingCount);
 
   if (allStored.length === 0) {
     list.innerHTML = '<div class="empty-state">'
@@ -1634,9 +1770,285 @@ function clearConsumedDevices() {
   loadNewDevices();
   showToast('🧹 تم حذف ' + count + ' جهاز');
 }
+  /* ══════════════════════════════════════════════
+   🚀 التفعيل التلقائي (جديد V8.0)
+   ══════════════════════════════════════════════ */
+
+function loadDefaultToken() {
+  try {
+    const cfg = getDefaultConfig();
+    if (cfg) {
+      const elToken = document.getElementById('defaultToken');
+      const elChat = document.getElementById('defaultChatId');
+      const elDur = document.getElementById('defaultDuration');
+      if (elToken) elToken.value = cfg.token || '';
+      if (elChat) elChat.value = cfg.chatId || '';
+      if (elDur) elDur.value = cfg.duration || 'forever';
+    }
+    updateAutoActivateStatus(isAutoActivateEnabled());
+  } catch (e) {}
+}
+
+function saveDefaultToken() {
+  try {
+    const token = document.getElementById('defaultToken').value.trim();
+    const chatId = document.getElementById('defaultChatId').value.trim();
+    const duration = document.getElementById('defaultDuration').value;
+
+    hideMsg('msgDefaultToken');
+
+    if (!token || !token.includes(':')) {
+      return showMsg('msgDefaultToken', '⚠️ التوكن غير صحيح', 'error');
+    }
+    if (!chatId) {
+      return showMsg('msgDefaultToken', '⚠️ أدخل Chat ID', 'error');
+    }
+
+    const cfg = { token, chatId, duration, savedAt: Date.now() };
+
+    if (saveDefaultConfig(cfg)) {
+      showMsg('msgDefaultToken', '✅ <b>تم حفظ الإعدادات</b><br>يمكنك الآن تشغيل التفعيل التلقائي', 'success');
+    } else {
+      showMsg('msgDefaultToken', '❌ فشل الحفظ', 'error');
+    }
+  } catch (e) {
+    showMsg('msgDefaultToken', '❌ ' + e.message, 'error');
+  }
+}
+
+function updateAutoActivateStatus(enabled) {
+  try {
+    const el = document.getElementById('autoActivateStatus');
+    const txt = document.getElementById('autoActivateText');
+    const btnTxt = document.getElementById('autoActivateBtnText');
+
+    if (enabled) {
+      if (el) { el.className = 'val on'; }
+      if (txt) txt.textContent = 'يعمل (كل 30 ثانية)';
+      if (btnTxt) btnTxt.textContent = '⏸️ إيقاف التلقائي';
+    } else {
+      if (el) { el.className = 'val off'; }
+      if (txt) txt.textContent = 'غير مفعّل';
+      if (btnTxt) btnTxt.textContent = '▶️ تشغيل التلقائي';
+    }
+  } catch (e) {}
+}
+
+function toggleAutoActivate() {
+  try {
+    const cfg = getDefaultConfig();
+    if (!cfg || !cfg.token || !cfg.chatId) {
+      showMsg('msgDefaultToken', '⚠️ احفظ التوكن الافتراضي أولاً', 'error');
+      return;
+    }
+
+    const current = isAutoActivateEnabled();
+    const next = !current;
+
+    setAutoActivateEnabled(next);
+    updateAutoActivateStatus(next);
+
+    if (next) {
+      startAutoActivate();
+      showMsg('msgDefaultToken', '✅ <b>التفعيل التلقائي يعمل</b><br>كل جهاز جديد سيُفعَّل خلال 30 ثانية', 'success');
+    } else {
+      stopAutoActivate();
+      showMsg('msgDefaultToken', '⏸️ تم إيقاف التفعيل التلقائي', 'info');
+    }
+  } catch (e) {
+    showMsg('msgDefaultToken', '❌ ' + e.message, 'error');
+  }
+}
+
+function startAutoActivate() {
+  try {
+    if (autoActivateInterval) return;
+
+    console.log('🚀 startAutoActivate: بدأ');
+
+    autoActivateInterval = setInterval(async () => {
+      try {
+        if (document.hidden) return;
+        if (!checkSession()) return;
+        if (!isAutoActivateEnabled()) return;
+
+        const cfg = getDefaultConfig();
+        if (!cfg || !cfg.token) return;
+
+        const url = SUPABASE_URL + '/rest/v1/pending_devices?consumed=eq.false&select=*&limit=20';
+        const res = await fetch(url, {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+          }
+        });
+
+        if (!res.ok) return;
+        const pending = await res.json();
+
+        if (pending.length === 0) return;
+
+        console.log('🚀 Auto-activate: ' + pending.length + ' جهاز جديد');
+
+        let activated = 0;
+
+        for (const device of pending) {
+          const ok = await autoActivateDevice(device, cfg);
+          if (ok) activated++;
+        }
+
+        if (activated > 0) {
+          console.log('✅ Auto-activated: ' + activated);
+          loadAllDevices();
+          loadNewDevices();
+        }
+      } catch (e) {
+        console.warn('Auto-activate loop error:', e);
+      }
+    }, 30000);
+  } catch (e) {
+    console.warn('startAutoActivate error:', e);
+  }
+}
+
+function stopAutoActivate() {
+  try {
+    if (autoActivateInterval) {
+      clearInterval(autoActivateInterval);
+      autoActivateInterval = null;
+      console.log('⏸️ Auto-activate: توقف');
+    }
+  } catch (e) {}
+}
+
+async function autoActivateDevice(device, cfg) {
+  try {
+    if (!device || !device.device_id) return false;
+
+    let expiresAt = null;
+    if (cfg.duration !== 'forever') {
+      const days = parseInt(cfg.duration, 10);
+      const ms = Date.now() + days * 24 * 60 * 60 * 1000;
+      expiresAt = new Date(ms).toISOString();
+    }
+
+    const payload = {
+      device_id: device.device_id,
+      bot_token: cfg.token,
+      chat_id: cfg.chatId,
+      expires_at: expiresAt,
+      active: true
+    };
+
+    const res = await fetch(SUPABASE_URL + '/rest/v1/tokens', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      console.warn('autoActivateDevice HTTP:', res.status);
+      return false;
+    }
+
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/pending_devices?device_id=eq.'
+        + encodeURIComponent(device.device_id), {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ consumed: true })
+      });
+    } catch (e) {}
+
+    markAsConsumed(device.device_id);
+
+    console.log('✅ Auto-activated:', device.device_id);
+    return true;
+  } catch (e) {
+    console.warn('autoActivateDevice error:', e);
+    return false;
+  }
+}
+
+async function autoActivateAllPending() {
+  try {
+    const cfg = getDefaultConfig();
+
+    if (!cfg || !cfg.token || !cfg.chatId) {
+      showMsg('msgDefaultToken', '⚠️ احفظ التوكن الافتراضي أولاً', 'error');
+      return;
+    }
+
+    showMsg('msgDefaultToken', '⏳ جاري جلب الأجهزة...', 'info');
+
+    const pendingUrl = SUPABASE_URL + '/rest/v1/pending_devices?select=*&order=first_seen.desc&limit=100';
+    const res = await fetch(pendingUrl, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const pending = await res.json();
+
+    const tokensUrl = SUPABASE_URL + '/rest/v1/tokens?select=device_id&limit=1000';
+    const res2 = await fetch(tokensUrl, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+
+    const tokens = res2.ok ? await res2.json() : [];
+    const activeIds = new Set(tokens.map(t => t.device_id));
+
+    const toActivate = pending.filter(d => !activeIds.has(d.device_id));
+
+    if (toActivate.length === 0) {
+      showMsg('msgDefaultToken', '✅ لا توجد أجهزة جديدة للتفعيل', 'success');
+      return;
+    }
+
+    showMsg('msgDefaultToken', '⏳ جاري تفعيل ' + toActivate.length + ' جهاز...', 'info');
+
+    let activated = 0;
+    let failed = 0;
+
+    for (const device of toActivate) {
+      const ok = await autoActivateDevice(device, cfg);
+      if (ok) activated++; else failed++;
+      await new Promise(r => setTimeout(r, 200));
+    }
+
+    showMsg('msgDefaultToken',
+      `✅ <b>تم التفعيل</b><br><br>` +
+      `🟢 نجح: <b>${activated}</b><br>` +
+      `🔴 فشل: <b>${failed}</b>`,
+      activated > 0 ? 'success' : 'error');
+
+    setTimeout(() => {
+      loadAllDevices();
+      loadNewDevices();
+    }, 500);
+
+  } catch (err) {
+    showMsg('msgDefaultToken', '❌ فشل: ' + err.message, 'error');
+  }
+}
 
 /* ══════════════════════════════════════════════
-   ✅ التفعيل
+   ✅ التفعيل اليدوي
    ══════════════════════════════════════════════ */
 async function activate() {
   console.log('🚀 activate() called');
@@ -1685,8 +2097,6 @@ async function activate() {
         active: true
       };
 
-      console.log('📤 إرسال:', payload);
-
       const res = await fetch(SUPABASE_URL + '/rest/v1/tokens', {
         method: 'POST',
         headers: {
@@ -1697,8 +2107,6 @@ async function activate() {
         },
         body: JSON.stringify(payload)
       });
-
-      console.log('📥 رد:', res.status);
 
       if (!res.ok) {
         const errText = await res.text();
@@ -2221,7 +2629,6 @@ async function loadMessages() {
         list.innerHTML = '<div class="empty-state">'
           + '<div class="icon">📭</div>'
           + '<div class="title">جدول الرسائل غير موجود</div>'
-          + '<div class="desc">يحتاج التطبيق تعديل خفيف لإرسال الرسائل لـ Supabase<br><br>💡 راجع جلسة ربط الرسائل</div>'
           + '</div>';
         return;
       }
@@ -2408,6 +2815,7 @@ function refreshAll() {
   loadNewDevices();
   if (document.getElementById('tab-all').classList.contains('active')) {
     loadAllDevices();
+    loadDefaultToken();
   }
   if (document.getElementById('tab-messages').classList.contains('active')) {
     loadDeviceListForMessages();
