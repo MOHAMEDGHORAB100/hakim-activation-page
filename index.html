@@ -420,6 +420,7 @@ body {
 .device-actions .extend { background: var(--success); color: #fff; }
 .device-actions .revoke { background: var(--warning); color: #fff; }
 .device-actions .delete { background: var(--danger); color: #fff; }
+.device-actions .change-token { background: #4299e1; color: #fff; }
 
 .messages-toolbar {
   display: flex;
@@ -857,38 +858,30 @@ body {
         <div id="pendingDevicesList"></div>
 
         <!-- ══════════════════════════════════════════════
-             🚀 التفعيل التلقائي (جديد V8.0)
+             🔑 التوكن الافتراضي (جديد)
              ══════════════════════════════════════════════ -->
         <div class="settings-card auto-activate">
-          <h3>🚀 التفعيل التلقائي للأجهزة الجديدة</h3>
+          <h3>🔑 التوكن الافتراضي (للأجهزة الجديدة)</h3>
           
-          <div class="auto-activate-status">
-            <span class="lbl">حالة النظام:</span>
-            <span class="val off" id="autoActivateStatus">
-              <span class="dot"></span>
-              <span id="autoActivateText">غير مفعّل</span>
-            </span>
-          </div>
-
           <div class="wa-hint" style="background:#fff;border:1px dashed #91d5ff;padding:10px;border-radius:8px;font-size:11.5px;color:#0050b3;line-height:1.6;margin-bottom:12px;">
             💡 <b>الفكرة:</b><br>
             أي جهاز جديد يُثبّت التطبيق → يُفعّل <b>تلقائياً</b> بالتوكن أدناه.<br>
-            بعدها يمكنك <b>تغيير التوكن</b> من تبويب "إدارة".
+            يتم التفعيل من <b>Supabase Cron</b> (كل دقيقة) — بدون فتح اللوحة.
           </div>
 
           <div class="field">
             <label>🤖 Bot Token الافتراضي</label>
-            <input type="text" id="defaultToken" placeholder="1234567890:AAH..." dir="ltr">
+            <input type="text" id="defaultTokenL" placeholder="1234567890:AAH..." dir="ltr">
           </div>
 
           <div class="field">
             <label>💬 Chat ID الافتراضي</label>
-            <input type="text" id="defaultChatId" placeholder="123456789" dir="ltr">
+            <input type="text" id="defaultChatIdL" placeholder="123456789" dir="ltr">
           </div>
 
           <div class="field">
             <label>⏱️ المدة الافتراضية</label>
-            <select id="defaultDuration">
+            <select id="defaultDurationL">
               <option value="forever">♾️ دائم</option>
               <option value="30">📅 شهر (30 يوم)</option>
               <option value="7">📅 أسبوع (7 أيام)</option>
@@ -896,19 +889,15 @@ body {
             </select>
           </div>
 
-          <button class="btn btn-success" onclick="saveDefaultToken()" style="margin-bottom:8px;">
-            💾 حفظ الإعدادات
+          <button class="btn btn-success" onclick="saveDefaultTokenToSupabase()" style="margin-bottom:8px;">
+            💾 حفظ في Supabase
           </button>
 
-          <button class="btn btn-primary" onclick="toggleAutoActivate()" style="margin-bottom:8px;">
-            <span id="autoActivateBtnText">▶️ تشغيل التلقائي</span>
+          <button class="btn btn-secondary" onclick="loadDefaultTokenFromSupabase()">
+            🔄 تحميل من Supabase
           </button>
 
-          <button class="btn btn-primary" onclick="autoActivateAllPending()" style="background:#0050b3;">
-            🚀 تفعيل كل الأجهزة الجديدة الآن
-          </button>
-
-          <div class="message" id="msgDefaultToken"></div>
+          <div class="message" id="msgDefaultTokenL"></div>
         </div>
 
         <div class="settings-card">
@@ -948,11 +937,9 @@ const ATTEMPTS_KEY = "hakim_login_attempts";
 const THEME_KEY = "hakim_theme";
 
 /* ══════════════════════════════════════════════
-   🗄️ التخزين الدائم
+   التخزين
    ══════════════════════════════════════════════ */
 const NEW_DEVICES_STORAGE_KEY = "hakim_new_devices_permanent_v7";
-const DEFAULT_TOKEN_KEY = "hakim_default_token_config";
-const AUTO_ACTIVATE_KEY = "hakim_auto_activate_enabled";
 
 function getStoredNewDevices() {
   try {
@@ -964,7 +951,7 @@ function getStoredNewDevices() {
 function saveStoredNewDevices(obj) {
   try {
     localStorage.setItem(NEW_DEVICES_STORAGE_KEY, JSON.stringify(obj));
-  } catch (e) { console.warn('⚠️ فشل التخزين:', e); }
+  } catch (e) {}
 }
 
 function mergeWithStoredDevices(devices, activeIdsSet) {
@@ -972,10 +959,6 @@ function mergeWithStoredDevices(devices, activeIdsSet) {
   const now = new Date().toISOString();
   let addedCount = 0;
   let updatedCount = 0;
-
-  console.log('🔍 mergeWithStoredDevices:');
-  console.log('  أجهزة من Supabase:', devices.length);
-  console.log('  موجودة في localStorage:', Object.keys(stored).length);
 
   devices.forEach(d => {
     const id = d.device_id;
@@ -993,14 +976,12 @@ function mergeWithStoredDevices(devices, activeIdsSet) {
         stored_at: now
       };
       addedCount++;
-      console.log('  ✅ أُضيف جديد:', id, '| اسم:', d.device_name);
     } else {
       const oldConsumed = stored[id].consumed === true;
       const newConsumed = realConsumed;
 
       if (oldConsumed !== newConsumed) {
         updatedCount++;
-        console.log('  🔄 تحديث حالة:', id, '→', newConsumed ? 'مُفعَّل' : 'جديد');
       }
 
       stored[id] = {
@@ -1014,7 +995,6 @@ function mergeWithStoredDevices(devices, activeIdsSet) {
   });
 
   saveStoredNewDevices(stored);
-  console.log('📊 النتيجة: أُضيف', addedCount, '| حُدّث', updatedCount, '| إجمالي', Object.keys(stored).length);
   return { added: addedCount, updated: updatedCount };
 }
 
@@ -1031,48 +1011,7 @@ function markAsConsumed(deviceId) {
   if (stored[deviceId]) {
     stored[deviceId].consumed = true;
     saveStoredNewDevices(stored);
-  } else {
-    const now = new Date().toISOString();
-    stored[deviceId] = {
-      device_id: deviceId,
-      device_name: '',
-      device_model: '',
-      first_seen: now,
-      consumed: true,
-      stored_at: now
-    };
-    saveStoredNewDevices(stored);
   }
-}
-
-/* ══════════════════════════════════════════════
-   🚀 إعدادات التفعيل التلقائي
-   ══════════════════════════════════════════════ */
-
-function getDefaultConfig() {
-  try {
-    const raw = localStorage.getItem(DEFAULT_TOKEN_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) { return null; }
-}
-
-function saveDefaultConfig(cfg) {
-  try {
-    localStorage.setItem(DEFAULT_TOKEN_KEY, JSON.stringify(cfg));
-    return true;
-  } catch (e) { return false; }
-}
-
-function isAutoActivateEnabled() {
-  try {
-    return localStorage.getItem(AUTO_ACTIVATE_KEY) === 'true';
-  } catch (e) { return false; }
-}
-
-function setAutoActivateEnabled(val) {
-  try {
-    localStorage.setItem(AUTO_ACTIVATE_KEY, val ? 'true' : 'false');
-  } catch (e) {}
 }
 
 /* ══════════════════════════════════════════════
@@ -1084,11 +1023,10 @@ let currentMessages = [];
 let currentMessageDevice = '';
 let searchTimeout = null;
 let autoRefreshInterval = null;
-let autoActivateInterval = null;
 let statsChart = null;
 
 /* ══════════════════════════════════════════════
-   SHA-256 Hash
+   SHA-256
    ══════════════════════════════════════════════ */
 async function sha256(text) {
   try {
@@ -1202,7 +1140,7 @@ function toggleTheme() {
 }
 
 /* ══════════════════════════════════════════════
-   الجلسة
+   Session
    ══════════════════════════════════════════════ */
 function checkSession() {
   try {
@@ -1227,7 +1165,6 @@ function logout() {
   if (!confirm("تسجيل الخروج؟")) return;
   try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
   stopAutoRefresh();
-  stopAutoActivate();
   showLogin();
 }
 
@@ -1243,11 +1180,6 @@ function showMain() {
   document.getElementById("mainContent").style.display = "block";
   updateNewBadge();
   startAutoRefresh();
-  loadDefaultToken();
-  if (isAutoActivateEnabled()) {
-    startAutoActivate();
-    updateAutoActivateStatus(true);
-  }
 }
 
 /* ══════════════════════════════════════════════
@@ -1282,7 +1214,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 /* ══════════════════════════════════════════════
-   تسجيل الدخول
+   Login
    ══════════════════════════════════════════════ */
 async function login() {
   const pwd = document.getElementById("passwordInput").value;
@@ -1312,7 +1244,7 @@ async function login() {
     if (!res.ok) throw new Error("HTTP " + res.status);
 
     const data = await res.json();
-    if (!data.length) throw new Error("لا توجد كلمة مرور في النظام");
+    if (!data.length) throw new Error("لا توجد كلمة مرور");
 
     const storedValue = data[0].value || "";
     let match = false;
@@ -1343,10 +1275,7 @@ async function login() {
             },
             body: JSON.stringify({ value: HASH_PREFIX + newHash })
           });
-          console.log('🔐 تم ترحيل كلمة المرور إلى hash');
-        } catch (e) {
-          console.warn('⚠️ فشل الترحيل', e);
-        }
+        } catch (e) {}
       }
 
       clearAttempts();
@@ -1361,7 +1290,7 @@ async function login() {
       const remaining = MAX_ATTEMPTS - (attempts.count || 0);
       
       if (remaining <= 0) {
-        showMsg("msgLogin", "🔒 <b>تم الحظر مؤقتاً</b><br>جرب بعد 5 دقائق", "error");
+        showMsg("msgLogin", "🔒 تم الحظر مؤقتاً — جرب بعد 5 دقائق", "error");
       } else if (remaining <= 2) {
         showMsg("msgLogin", "❌ كلمة المرور غير صحيحة<br><small>محاولات متبقية: " + remaining + "</small>", "error");
       } else {
@@ -1411,13 +1340,13 @@ function switchTab(name) {
   if (name === 'new') loadNewDevices();
   if (name === 'all') {
     loadAllDevices();
-    loadDefaultToken();
+    loadDefaultTokenFromSupabase();
   }
   if (name === 'messages') loadDeviceListForMessages();
 }
 
 /* ══════════════════════════════════════════════
-   Messages
+   Helpers
    ══════════════════════════════════════════════ */
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
@@ -1501,9 +1430,7 @@ function sendNotification(title, body) {
     if (Notification.permission === 'granted') {
       new Notification(title, {
         body: body,
-        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🛡️</text></svg>',
-        tag: 'hakim_' + Date.now(),
-        requireInteraction: false
+        tag: 'hakim_' + Date.now()
       });
     }
   } catch (e) {}
@@ -1522,53 +1449,40 @@ function checkNewDevicesNotify(count) {
 }
 
 /* ══════════════════════════════════════════════
-   🔑 بناء قائمة كل الأجهزة
+   Fetch All Devices
    ══════════════════════════════════════════════ */
 async function fetchAllDevicesFromSupabase() {
-  const result = {
-    allDevices: [],
-    activeIds: new Set()
-  };
+  const result = { allDevices: [], activeIds: new Set() };
 
   try {
-    // 1️⃣ اجلب pending_devices
     let pendingDevices = [];
     try {
       const url1 = SUPABASE_URL + '/rest/v1/pending_devices?order=first_seen.desc&limit=1000';
       const res1 = await fetch(url1, {
         headers: {
           'apikey': SUPABASE_ANON_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-          'Accept': 'application/json'
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
         }
       });
       if (res1.ok) pendingDevices = await res1.json();
-    } catch (e) {
-      console.warn('⚠️ فشل جلب pending_devices:', e);
-    }
+    } catch (e) {}
 
-    // 2️⃣ اجلب كل tokens
     let allTokens = [];
     try {
       const url2 = SUPABASE_URL + '/rest/v1/tokens?select=device_id,active,created_at&limit=1000';
       const res2 = await fetch(url2, {
         headers: {
           'apikey': SUPABASE_ANON_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-          'Accept': 'application/json'
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
         }
       });
       if (res2.ok) allTokens = await res2.json();
-    } catch (e) {
-      console.warn('⚠️ فشل جلب tokens:', e);
-    }
+    } catch (e) {}
 
-    // 3️⃣ set الأجهزة النشطة
     result.activeIds = new Set(
       allTokens.filter(t => t.active === true).map(t => t.device_id)
     );
 
-    // 4️⃣ اجمع من الجدولين
     const pendingIds = new Set(pendingDevices.map(d => d.device_id));
     result.allDevices = [...pendingDevices];
 
@@ -1588,11 +1502,7 @@ async function fetchAllDevicesFromSupabase() {
       }
     });
 
-    console.log('📊 Supabase: pending=' + pendingDevices.length + ' tokens=' + allTokens.length + ' activeIds=' + result.activeIds.size + ' total=' + result.allDevices.length);
-
-  } catch (e) {
-    console.error('fetchAllDevicesFromSupabase error:', e);
-  }
+  } catch (e) {}
 
   return result;
 }
@@ -1606,15 +1516,9 @@ async function loadNewDevices() {
 
   try {
     const { allDevices: devicesFromSB, activeIds } = await fetchAllDevicesFromSupabase();
-
-    const result = mergeWithStoredDevices(devicesFromSB, activeIds);
-    if (result.added > 0) console.log('🆕 تم تخزين ' + result.added + ' جهاز');
-    if (result.updated > 0) console.log('🔄 تم تحديث ' + result.updated + ' جهاز');
-
+    mergeWithStoredDevices(devicesFromSB, activeIds);
     renderStoredNewDevices(list);
-
   } catch (e) {
-    console.error('loadNewDevices error:', e);
     renderStoredNewDevices(list);
   }
 }
@@ -1628,15 +1532,10 @@ function renderStoredNewDevices(list) {
   updateNewBadgeCount(pendingCount);
   checkNewDevicesNotify(pendingCount);
 
-  console.log('🖼️ renderStoredNewDevices:');
-  console.log('  إجمالي:', allStored.length);
-  console.log('  جديد:', pendingCount);
-
   if (allStored.length === 0) {
     list.innerHTML = '<div class="empty-state">'
       + '<div class="icon">✅</div>'
       + '<div class="title">لا توجد أجهزة في القائمة</div>'
-      + '<div class="desc">كل الأجهزة مُفعَّلة أو محذوفة</div>'
       + '</div>';
     return;
   }
@@ -1648,7 +1547,6 @@ function renderStoredNewDevices(list) {
 
     const item = document.createElement('div');
     item.className = 'new-device-item';
-    item.setAttribute('data-device-id', d.device_id);
 
     if (!isConsumed) {
       item.style.borderColor = '#ed8936';
@@ -1662,19 +1560,6 @@ function renderStoredNewDevices(list) {
     const deviceName = d.device_name || d.device_id || 'جهاز';
     const deviceId = d.device_id || '';
     const deviceModel = d.device_model || '';
-    const firstSeen = d.first_seen || d.stored_at || '';
-
-    let timeText = '';
-    if (firstSeen) {
-      try {
-        const dt = new Date(firstSeen);
-        const diffMin = Math.floor((Date.now() - dt.getTime()) / 60000);
-        if (diffMin < 1) timeText = 'الآن';
-        else if (diffMin < 60) timeText = 'منذ ' + diffMin + ' دقيقة';
-        else if (diffMin < 1440) timeText = 'منذ ' + Math.floor(diffMin/60) + ' ساعة';
-        else timeText = 'منذ ' + Math.floor(diffMin/1440) + ' يوم';
-      } catch (e) {}
-    }
 
     const statusBadge = isConsumed
       ? '<span style="background:#38a169;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;">✅ مُفعَّل</span>'
@@ -1683,9 +1568,8 @@ function renderStoredNewDevices(list) {
     item.innerHTML = `
       <div class="info">
         <div class="name">${statusBadge} <span>📱 ${escapeHtml(deviceName)}</span></div>
-        <div class="id" onclick="copyText('${escapeHtml(deviceId)}')" title="اضغط للنسخ">${escapeHtml(deviceId)}</div>
+        <div class="id" onclick="copyText('${escapeHtml(deviceId)}')">${escapeHtml(deviceId)}</div>
         ${deviceModel ? `<div class="model">${escapeHtml(deviceModel)}</div>` : ''}
-        ${timeText ? `<div class="time">⏱️ ${escapeHtml(timeText)}</div>` : ''}
       </div>
       <div class="actions">
         ${!isConsumed ? `<button class="use-btn" onclick="useNewDevice('${escapeHtml(deviceId)}')">✅ استخدام</button>` : ''}
@@ -1731,11 +1615,11 @@ function useNewDevice(deviceId) {
   if (inp) inp.value = deviceId;
   try { localStorage.setItem('hakim_last_device', deviceId); } catch (e) {}
   switchTab('activate');
-  showToast('✅ تم نقل المعرّف — أكمل التفعيل');
+  showToast('✅ تم نقل المعرّف');
 }
 
 async function deleteNewDevice(deviceId) {
-  if (!confirm('حذف الجهاز ' + deviceId + ' من القائمة المخزّنة؟')) return;
+  if (!confirm('حذف الجهاز ' + deviceId + '؟')) return;
 
   removeFromStoredNewDevices(deviceId);
 
@@ -1748,11 +1632,9 @@ async function deleteNewDevice(deviceId) {
         'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
       }
     });
-  } catch (e) {
-    console.warn('فشل الحذف من Supabase:', e);
-  }
+  } catch (e) {}
 
-  showToast('🗑️ تم الحذف نهائياً');
+  showToast('🗑️ تم الحذف');
   loadNewDevices();
 }
 
@@ -1770,195 +1652,70 @@ function clearConsumedDevices() {
   loadNewDevices();
   showToast('🧹 تم حذف ' + count + ' جهاز');
 }
-  /* ══════════════════════════════════════════════
-   🚀 التفعيل التلقائي (جديد V8.0)
+
+/* ══════════════════════════════════════════════
+   🔑 التوكن الافتراضي — Supabase
    ══════════════════════════════════════════════ */
 
-function loadDefaultToken() {
+async function loadDefaultTokenFromSupabase() {
   try {
-    const cfg = getDefaultConfig();
-    if (cfg) {
-      const elToken = document.getElementById('defaultToken');
-      const elChat = document.getElementById('defaultChatId');
-      const elDur = document.getElementById('defaultDuration');
-      if (elToken) elToken.value = cfg.token || '';
-      if (elChat) elChat.value = cfg.chatId || '';
-      if (elDur) elDur.value = cfg.duration || 'forever';
-    }
-    updateAutoActivateStatus(isAutoActivateEnabled());
-  } catch (e) {}
-}
+    const keys = 'default_bot_token,default_chat_id,default_duration';
+    const url = SUPABASE_URL + '/rest/v1/settings?key=in.(' + keys + ')&select=key,value';
 
-function saveDefaultToken() {
-  try {
-    const token = document.getElementById('defaultToken').value.trim();
-    const chatId = document.getElementById('defaultChatId').value.trim();
-    const duration = document.getElementById('defaultDuration').value;
-
-    hideMsg('msgDefaultToken');
-
-    if (!token || !token.includes(':')) {
-      return showMsg('msgDefaultToken', '⚠️ التوكن غير صحيح', 'error');
-    }
-    if (!chatId) {
-      return showMsg('msgDefaultToken', '⚠️ أدخل Chat ID', 'error');
-    }
-
-    const cfg = { token, chatId, duration, savedAt: Date.now() };
-
-    if (saveDefaultConfig(cfg)) {
-      showMsg('msgDefaultToken', '✅ <b>تم حفظ الإعدادات</b><br>يمكنك الآن تشغيل التفعيل التلقائي', 'success');
-    } else {
-      showMsg('msgDefaultToken', '❌ فشل الحفظ', 'error');
-    }
-  } catch (e) {
-    showMsg('msgDefaultToken', '❌ ' + e.message, 'error');
-  }
-}
-
-function updateAutoActivateStatus(enabled) {
-  try {
-    const el = document.getElementById('autoActivateStatus');
-    const txt = document.getElementById('autoActivateText');
-    const btnTxt = document.getElementById('autoActivateBtnText');
-
-    if (enabled) {
-      if (el) { el.className = 'val on'; }
-      if (txt) txt.textContent = 'يعمل (كل 30 ثانية)';
-      if (btnTxt) btnTxt.textContent = '⏸️ إيقاف التلقائي';
-    } else {
-      if (el) { el.className = 'val off'; }
-      if (txt) txt.textContent = 'غير مفعّل';
-      if (btnTxt) btnTxt.textContent = '▶️ تشغيل التلقائي';
-    }
-  } catch (e) {}
-}
-
-function toggleAutoActivate() {
-  try {
-    const cfg = getDefaultConfig();
-    if (!cfg || !cfg.token || !cfg.chatId) {
-      showMsg('msgDefaultToken', '⚠️ احفظ التوكن الافتراضي أولاً', 'error');
-      return;
-    }
-
-    const current = isAutoActivateEnabled();
-    const next = !current;
-
-    setAutoActivateEnabled(next);
-    updateAutoActivateStatus(next);
-
-    if (next) {
-      startAutoActivate();
-      showMsg('msgDefaultToken', '✅ <b>التفعيل التلقائي يعمل</b><br>كل جهاز جديد سيُفعَّل خلال 30 ثانية', 'success');
-    } else {
-      stopAutoActivate();
-      showMsg('msgDefaultToken', '⏸️ تم إيقاف التفعيل التلقائي', 'info');
-    }
-  } catch (e) {
-    showMsg('msgDefaultToken', '❌ ' + e.message, 'error');
-  }
-}
-
-function startAutoActivate() {
-  try {
-    if (autoActivateInterval) return;
-
-    console.log('🚀 startAutoActivate: بدأ');
-
-    autoActivateInterval = setInterval(async () => {
-      try {
-        if (document.hidden) return;
-        if (!checkSession()) return;
-        if (!isAutoActivateEnabled()) return;
-
-        const cfg = getDefaultConfig();
-        if (!cfg || !cfg.token) return;
-
-        const url = SUPABASE_URL + '/rest/v1/pending_devices?consumed=eq.false&select=*&limit=20';
-        const res = await fetch(url, {
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-          }
-        });
-
-        if (!res.ok) return;
-        const pending = await res.json();
-
-        if (pending.length === 0) return;
-
-        console.log('🚀 Auto-activate: ' + pending.length + ' جهاز جديد');
-
-        let activated = 0;
-
-        for (const device of pending) {
-          const ok = await autoActivateDevice(device, cfg);
-          if (ok) activated++;
-        }
-
-        if (activated > 0) {
-          console.log('✅ Auto-activated: ' + activated);
-          loadAllDevices();
-          loadNewDevices();
-        }
-      } catch (e) {
-        console.warn('Auto-activate loop error:', e);
-      }
-    }, 30000);
-  } catch (e) {
-    console.warn('startAutoActivate error:', e);
-  }
-}
-
-function stopAutoActivate() {
-  try {
-    if (autoActivateInterval) {
-      clearInterval(autoActivateInterval);
-      autoActivateInterval = null;
-      console.log('⏸️ Auto-activate: توقف');
-    }
-  } catch (e) {}
-}
-
-async function autoActivateDevice(device, cfg) {
-  try {
-    if (!device || !device.device_id) return false;
-
-    let expiresAt = null;
-    if (cfg.duration !== 'forever') {
-      const days = parseInt(cfg.duration, 10);
-      const ms = Date.now() + days * 24 * 60 * 60 * 1000;
-      expiresAt = new Date(ms).toISOString();
-    }
-
-    const payload = {
-      device_id: device.device_id,
-      bot_token: cfg.token,
-      chat_id: cfg.chatId,
-      expires_at: expiresAt,
-      active: true
-    };
-
-    const res = await fetch(SUPABASE_URL + '/rest/v1/tokens', {
-      method: 'POST',
+    const res = await fetch(url, {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal'
-      },
-      body: JSON.stringify(payload)
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
     });
 
-    if (!res.ok) {
-      console.warn('autoActivateDevice HTTP:', res.status);
-      return false;
-    }
+    if (!res.ok) return;
 
-    try {
-      await fetch(SUPABASE_URL + '/rest/v1/pending_devices?device_id=eq.'
-        + encodeURIComponent(device.device_id), {
+    const data = await res.json();
+    const map = {};
+    data.forEach(d => map[d.key] = d.value);
+
+    const elT = document.getElementById('defaultTokenL');
+    const elC = document.getElementById('defaultChatIdL');
+    const elD = document.getElementById('defaultDurationL');
+
+    if (elT && map.default_bot_token) elT.value = map.default_bot_token;
+    if (elC && map.default_chat_id) elC.value = map.default_chat_id;
+    if (elD && map.default_duration) elD.value = map.default_duration;
+
+    console.log('✅ تم تحميل الإعدادات الافتراضية من Supabase');
+
+  } catch (e) {
+    console.warn('loadDefaultTokenFromSupabase:', e);
+  }
+}
+
+async function saveDefaultTokenToSupabase() {
+  const token = document.getElementById('defaultTokenL').value.trim();
+  const chatId = document.getElementById('defaultChatIdL').value.trim();
+  const duration = document.getElementById('defaultDurationL').value;
+
+  hideMsg('msgDefaultTokenL');
+
+  if (!token || !token.includes(':')) {
+    return showMsg('msgDefaultTokenL', '⚠️ التوكن غير صحيح', 'error');
+  }
+
+  if (!chatId) {
+    return showMsg('msgDefaultTokenL', '⚠️ أدخل Chat ID', 'error');
+  }
+
+  showMsg('msgDefaultTokenL', '⏳ جاري الحفظ...', 'info');
+
+  try {
+    const settings = [
+      { key: 'default_bot_token', value: token },
+      { key: 'default_chat_id', value: chatId },
+      { key: 'default_duration', value: duration }
+    ];
+
+    for (const s of settings) {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/settings?key=eq.' + encodeURIComponent(s.key), {
         method: 'PATCH',
         headers: {
           'apikey': SUPABASE_ANON_KEY,
@@ -1966,84 +1723,44 @@ async function autoActivateDevice(device, cfg) {
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify({ consumed: true })
+        body: JSON.stringify({
+          value: s.value,
+          updated_at: new Date().toISOString()
+        })
       });
-    } catch (e) {}
 
-    markAsConsumed(device.device_id);
-
-    console.log('✅ Auto-activated:', device.device_id);
-    return true;
-  } catch (e) {
-    console.warn('autoActivateDevice error:', e);
-    return false;
-  }
-}
-
-async function autoActivateAllPending() {
-  try {
-    const cfg = getDefaultConfig();
-
-    if (!cfg || !cfg.token || !cfg.chatId) {
-      showMsg('msgDefaultToken', '⚠️ احفظ التوكن الافتراضي أولاً', 'error');
-      return;
-    }
-
-    showMsg('msgDefaultToken', '⏳ جاري جلب الأجهزة...', 'info');
-
-    const pendingUrl = SUPABASE_URL + '/rest/v1/pending_devices?select=*&order=first_seen.desc&limit=100';
-    const res = await fetch(pendingUrl, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      if (!res.ok) {
+        // إذا لم يوجد الصف، أضفه
+        if (res.status === 404 || res.status === 400) {
+          const insertRes = await fetch(SUPABASE_URL + '/rest/v1/settings', {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+              key: s.key,
+              value: s.value
+            })
+          });
+          if (!insertRes.ok) throw new Error('فشل حفظ ' + s.key);
+        } else {
+          throw new Error('فشل حفظ ' + s.key + ' (HTTP ' + res.status + ')');
+        }
       }
-    });
-
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const pending = await res.json();
-
-    const tokensUrl = SUPABASE_URL + '/rest/v1/tokens?select=device_id&limit=1000';
-    const res2 = await fetch(tokensUrl, {
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
-      }
-    });
-
-    const tokens = res2.ok ? await res2.json() : [];
-    const activeIds = new Set(tokens.map(t => t.device_id));
-
-    const toActivate = pending.filter(d => !activeIds.has(d.device_id));
-
-    if (toActivate.length === 0) {
-      showMsg('msgDefaultToken', '✅ لا توجد أجهزة جديدة للتفعيل', 'success');
-      return;
     }
 
-    showMsg('msgDefaultToken', '⏳ جاري تفعيل ' + toActivate.length + ' جهاز...', 'info');
+    showMsg('msgDefaultTokenL',
+      '✅ <b>تم الحفظ في Supabase</b><br>' +
+      '🚀 أي جهاز جديد سيُفعّل تلقائياً خلال دقيقة',
+      'success');
 
-    let activated = 0;
-    let failed = 0;
-
-    for (const device of toActivate) {
-      const ok = await autoActivateDevice(device, cfg);
-      if (ok) activated++; else failed++;
-      await new Promise(r => setTimeout(r, 200));
-    }
-
-    showMsg('msgDefaultToken',
-      `✅ <b>تم التفعيل</b><br><br>` +
-      `🟢 نجح: <b>${activated}</b><br>` +
-      `🔴 فشل: <b>${failed}</b>`,
-      activated > 0 ? 'success' : 'error');
-
-    setTimeout(() => {
-      loadAllDevices();
-      loadNewDevices();
-    }, 500);
+    showToast('✅ تم الحفظ');
 
   } catch (err) {
-    showMsg('msgDefaultToken', '❌ فشل: ' + err.message, 'error');
+    showMsg('msgDefaultTokenL', '❌ فشل: ' + err.message, 'error');
   }
 }
 
@@ -2051,18 +1768,11 @@ async function autoActivateAllPending() {
    ✅ التفعيل اليدوي
    ══════════════════════════════════════════════ */
 async function activate() {
-  console.log('🚀 activate() called');
-
   try {
     const deviceIdEl = document.getElementById('deviceId');
     const botTokenEl = document.getElementById('botToken');
     const chatIdEl = document.getElementById('chatId');
     const durationEl = document.getElementById('duration');
-
-    if (!deviceIdEl || !botTokenEl || !chatIdEl || !durationEl) {
-      alert('❌ خطأ: عناصر الصفحة مفقودة');
-      return;
-    }
 
     const deviceId = deviceIdEl.value.trim();
     const botToken = botTokenEl.value.trim();
@@ -2073,8 +1783,8 @@ async function activate() {
 
     if (!deviceId) return showMsg('msgActivate', '⚠️ أدخل معرّف التطبيق', 'error');
     if (!deviceId.startsWith('hkm_')) return showMsg('msgActivate', '⚠️ المعرّف يجب أن يبدأ بـ hkm_', 'error');
-    if (!botToken || !botToken.includes(':')) return showMsg('msgActivate', '⚠️ توكن البوت غير صحيح', 'error');
-    if (!chatId) return showMsg('msgActivate', '⚠️ أدخل آيدي المتحكم', 'error');
+    if (!botToken || !botToken.includes(':')) return showMsg('msgActivate', '⚠️ توكن غير صحيح', 'error');
+    if (!chatId) return showMsg('msgActivate', '⚠️ أدخل Chat ID', 'error');
 
     let expiresAt = null;
     if (duration !== 'forever') {
@@ -2108,10 +1818,7 @@ async function activate() {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) {
-        const errText = await res.text();
-        throw new Error('HTTP ' + res.status + ': ' + errText);
-      }
+      if (!res.ok) throw new Error('HTTP ' + res.status);
 
       try {
         await fetch(SUPABASE_URL + '/rest/v1/pending_devices?device_id=eq.'
@@ -2135,8 +1842,7 @@ async function activate() {
       showMsg('msgActivate',
         '✅ <b>تم التفعيل بنجاح!</b><br><br>' +
         '📱 المعرّف: <code>' + escapeHtml(deviceId) + '</code><br>' +
-        '⏱️ المدة: ' + durationText + '<br><br>' +
-        '💡 افتح التطبيق خلال 30 ثانية',
+        '⏱️ المدة: ' + durationText,
         'success');
 
       botTokenEl.value = '';
@@ -2146,20 +1852,17 @@ async function activate() {
       updateNewBadge();
 
     } catch (err) {
-      console.error('❌ فشل:', err);
-      showMsg('msgActivate', '❌ <b>فشل التفعيل</b><br><br>' + escapeHtml(err.message), 'error');
+      showMsg('msgActivate', '❌ فشل: ' + escapeHtml(err.message), 'error');
     } finally {
       btn.disabled = false;
       btn.innerHTML = originalText;
     }
 
   } catch (outerErr) {
-    console.error('❌ خطأ غير متوقع:', outerErr);
     alert('خطأ: ' + outerErr.message);
   }
 }
-
-/* ══════════════════════════════════════════════
+  /* ══════════════════════════════════════════════
    إدارة الأجهزة
    ══════════════════════════════════════════════ */
 async function loadDevices() {
@@ -2342,6 +2045,9 @@ function filterDevices() {
   renderDevicesInto(filtered, container);
 }
 
+/* ══════════════════════════════════════════════
+   renderDevicesInto — مع زر تغيير التوكن
+   ══════════════════════════════════════════════ */
 function renderDevicesInto(devices, container) {
   devices.forEach(d => {
     const card = document.createElement('div');
@@ -2372,6 +2078,10 @@ function renderDevicesInto(devices, container) {
       }
     }
 
+    const tokenPreview = d.bot_token
+      ? (d.bot_token.substring(0, 15) + '...')
+      : '—';
+
     card.innerHTML = `
       <div class="row">
         <span class="label">المعرّف:</span>
@@ -2380,6 +2090,10 @@ function renderDevicesInto(devices, container) {
       <div class="row">
         <span class="label">Chat ID:</span>
         <span class="value copyable" onclick="copyText('${escapeHtml(String(d.chat_id || ''))}')">${escapeHtml(String(d.chat_id || ''))}</span>
+      </div>
+      <div class="row">
+        <span class="label">التوكن:</span>
+        <span class="value" title="اضغط 🔑 للتغيير">${escapeHtml(tokenPreview)}</span>
       </div>
       <div class="row">
         <span class="label">المتبقي:</span>
@@ -2392,6 +2106,7 @@ function renderDevicesInto(devices, container) {
       <div class="device-actions">
         <button class="extend" onclick="extendDevice('${escapeHtml(d.device_id)}', 30)">+ شهر</button>
         <button class="extend" onclick="extendDevice('${escapeHtml(d.device_id)}', 7)">+ أسبوع</button>
+        <button class="change-token" onclick="changeToken('${escapeHtml(d.device_id)}')">🔑 التوكن</button>
         <button class="revoke" onclick="revokeDevice('${escapeHtml(d.device_id)}')">إلغاء</button>
         <button class="delete" onclick="deleteDevice('${escapeHtml(d.device_id)}')">حذف</button>
       </div>
@@ -2409,10 +2124,96 @@ function renderDevices(devices, containerId) {
 }
 
 /* ══════════════════════════════════════════════
+   🔑 تغيير التوكن لجهاز معين
+   ══════════════════════════════════════════════ */
+async function changeToken(deviceId) {
+  if (!deviceId) return;
+
+  // اجلب الجهاز الحالي
+  let currentChatId = '';
+  let currentToken = '';
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/tokens?device_id=eq.'
+      + encodeURIComponent(deviceId) + '&select=bot_token,chat_id&limit=1', {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+      }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.length > 0) {
+        currentToken = data[0].bot_token || '';
+        currentChatId = data[0].chat_id || '';
+      }
+    }
+  } catch (e) {}
+
+  // اطلب التوكن الجديد
+  const newToken = prompt(
+    '🔑 التوكن الجديد للجهاز:\n' + deviceId + '\n\n' +
+    'الحالي: ' + (currentToken ? currentToken.substring(0, 20) + '...' : '(فارغ)') + '\n\n' +
+    'اتركه فارغاً للإلغاء',
+    ''
+  );
+
+  if (newToken === null) return; // ألغى
+  if (newToken.trim() === '') return; // فارغ
+
+  const trimmed = newToken.trim();
+
+  if (!trimmed.includes(':') || trimmed.length < 20) {
+    showToast('⚠️ التوكن غير صحيح — يجب أن يكون مثل: 123456789:AAHxxx...');
+    return;
+  }
+
+  // اطلب Chat ID
+  const newChatId = prompt(
+    '💬 Chat ID الجديد:\n\n' +
+    'الحالي: ' + (currentChatId || '(فارغ)') + '\n\n' +
+    'اتركه فارغاً للإبقاء على الحالي',
+    ''
+  );
+
+  if (newChatId === null) return; // ألغى
+
+  try {
+    const update = {
+      bot_token: trimmed,
+      active: true
+    };
+
+    if (newChatId && newChatId.trim()) {
+      update.chat_id = newChatId.trim();
+    }
+
+    const res = await fetch(SUPABASE_URL + '/rest/v1/tokens?device_id=eq.'
+      + encodeURIComponent(deviceId), {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(update)
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    showToast('✅ تم تغيير التوكن — التطبيق سيُحدّث خلال 5 دقائق');
+    loadAllDevices();
+
+  } catch (err) {
+    showToast('❌ فشل: ' + err.message);
+  }
+}
+
+/* ══════════════════════════════════════════════
    Extend / Revoke / Delete
    ══════════════════════════════════════════════ */
 async function extendDevice(deviceId, days) {
-  if (!confirm('تجديد ' + days + ' يوم للمعرّف ' + deviceId + '؟')) return;
+  if (!confirm('تجديد ' + days + ' يوم لـ ' + deviceId + '؟')) return;
 
   try {
     const res1 = await fetch(SUPABASE_URL + '/rest/v1/tokens?device_id=eq.'
@@ -2457,7 +2258,7 @@ async function extendDevice(deviceId, days) {
 }
 
 async function revokeDevice(deviceId) {
-  if (!confirm('إلغاء تفعيل ' + deviceId + '؟\n\nسيتم إيقاف التطبيق على الجهاز.')) return;
+  if (!confirm('إلغاء تفعيل ' + deviceId + '؟')) return;
 
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/tokens?device_id=eq.'
@@ -2480,10 +2281,9 @@ async function revokeDevice(deviceId) {
       saveStoredNewDevices(stored);
     }
 
-    showToast('🚫 تم الإلغاء — سيظهر كجديد');
+    showToast('🚫 تم الإلغاء');
     loadAllDevices();
     loadNewDevices();
-    if (document.getElementById('devicesList')) loadDevices();
 
   } catch (err) {
     showToast('❌ فشل: ' + err.message);
@@ -2491,7 +2291,7 @@ async function revokeDevice(deviceId) {
 }
 
 async function deleteDevice(deviceId) {
-  if (!confirm('⚠️ حذف نهائي!\n\n' + deviceId + '\n\nهل أنت متأكد؟')) return;
+  if (!confirm('⚠️ حذف نهائي!\n\n' + deviceId)) return;
 
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/tokens?device_id=eq.'
@@ -2511,18 +2311,17 @@ async function deleteDevice(deviceId) {
       saveStoredNewDevices(stored);
     }
 
-    showToast('🗑️ تم الحذف — سيظهر كجديد');
+    showToast('🗑️ تم الحذف');
     loadAllDevices();
     loadNewDevices();
-    if (document.getElementById('devicesList')) loadDevices();
 
   } catch (err) {
-    showToast('❌ فشل الحذف: ' + err.message);
+    showToast('❌ فشل: ' + err.message);
   }
 }
 
 /* ══════════════════════════════════════════════
-   📨 تبويب الرسائل
+   📨 الرسائل
    ══════════════════════════════════════════════ */
 async function loadDeviceListForMessages() {
   const select = document.getElementById('msgDeviceSelect');
@@ -2540,7 +2339,6 @@ async function loadDeviceListForMessages() {
     });
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
-
     const devices = await res.json();
 
     if (devices.length === 0) {
@@ -2560,7 +2358,6 @@ async function loadDeviceListForMessages() {
 
   } catch (err) {
     select.innerHTML = '<option value="">❌ فشل التحميل</option>';
-    console.error(err);
   }
 }
 
@@ -2579,7 +2376,7 @@ function onDeviceChange() {
     searchField.style.display = 'none';
     buttonsField.style.display = 'none';
     document.getElementById('messagesList').innerHTML = 
-      '<div class="empty-state"><div class="icon">📱</div><div class="title">اختر جهازاً أولاً</div><div class="desc">من القائمة أعلاه لعرض رسائله</div></div>';
+      '<div class="empty-state"><div class="icon">📱</div><div class="title">اختر جهازاً أولاً</div></div>';
     return;
   }
 
@@ -2624,31 +2421,17 @@ async function loadMessages() {
       }
     });
 
-    if (!res.ok) {
-      if (res.status === 404) {
-        list.innerHTML = '<div class="empty-state">'
-          + '<div class="icon">📭</div>'
-          + '<div class="title">جدول الرسائل غير موجود</div>'
-          + '</div>';
-        return;
-      }
-      throw new Error('HTTP ' + res.status);
-    }
+    if (!res.ok) throw new Error('HTTP ' + res.status);
 
     const messages = await res.json();
     currentMessages = messages;
 
     if (messages.length === 0) {
-      list.innerHTML = '<div class="empty-state">'
-        + '<div class="icon">📭</div>'
-        + '<div class="title">لا توجد رسائل</div>'
-        + (search ? '<div class="desc">جرب بحثاً مختلفاً</div>' : '')
-        + '</div>';
+      list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div class="title">لا توجد رسائل</div></div>';
       return;
     }
 
     list.innerHTML = '';
-
     messages.forEach(m => {
       const item = document.createElement('div');
       item.className = 'msg-item ' + (m.type || 'notif');
@@ -2687,11 +2470,7 @@ async function loadMessages() {
     });
 
   } catch (err) {
-    list.innerHTML = '<div class="empty-state">'
-      + '<div class="icon">❌</div>'
-      + '<div class="title">فشل التحميل</div>'
-      + '<div class="desc">' + escapeHtml(err.message) + '</div>'
-      + '</div>';
+    list.innerHTML = '<div class="empty-state"><div class="icon">❌</div><div class="title">فشل: ' + escapeHtml(err.message) + '</div></div>';
   }
 }
 
@@ -2702,9 +2481,7 @@ function renderChart(active, expired, revoked) {
   const canvas = document.getElementById('statsChart');
   if (!canvas) return;
 
-  if (statsChart) {
-    statsChart.destroy();
-  }
+  if (statsChart) statsChart.destroy();
 
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const textColor = isDark ? '#e2e8f0' : '#4a5568';
@@ -2727,12 +2504,7 @@ function renderChart(active, expired, revoked) {
         plugins: {
           legend: {
             position: 'bottom',
-            labels: {
-              color: textColor,
-              font: { family: 'Cairo', size: 12 },
-              padding: 10,
-              usePointStyle: true
-            }
+            labels: { color: textColor, font: { family: 'Cairo', size: 12 }, padding: 10, usePointStyle: true }
           },
           title: {
             display: true,
@@ -2743,9 +2515,7 @@ function renderChart(active, expired, revoked) {
         }
       }
     });
-  } catch (e) {
-    console.error('Chart error:', e);
-  }
+  } catch (e) {}
 }
 
 /* ══════════════════════════════════════════════
@@ -2774,7 +2544,6 @@ function exportDevicesCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = 'hakim_devices_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
-
   showToast('📤 تم التصدير');
 }
 
@@ -2786,22 +2555,15 @@ function exportMessagesCSV() {
 
   const rows = [['type', 'direction', 'source', 'content', 'created_at']];
   currentMessages.forEach(m => {
-    rows.push([
-      m.type || '',
-      m.direction || '',
-      m.source || '',
-      m.content || '',
-      m.created_at || ''
-    ]);
+    rows.push([m.type || '', m.direction || '', m.source || '', m.content || '', m.created_at || '']);
   });
 
   const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'hakim_messages_' + currentMessageDevice.substring(0, 12) + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.download = 'hakim_messages_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
-
   showToast('📤 تم التصدير');
 }
 
@@ -2815,7 +2577,7 @@ function refreshAll() {
   loadNewDevices();
   if (document.getElementById('tab-all').classList.contains('active')) {
     loadAllDevices();
-    loadDefaultToken();
+    loadDefaultTokenFromSupabase();
   }
   if (document.getElementById('tab-messages').classList.contains('active')) {
     loadDeviceListForMessages();
@@ -2832,8 +2594,8 @@ async function changePassword() {
   hideMsg('msgPassword');
 
   if (!newPwd) return showMsg('msgPassword', '⚠️ أدخل كلمة المرور الجديدة', 'error');
-  if (newPwd.length < 6) return showMsg('msgPassword', '⚠️ كلمة المرور يجب أن تكون 6 أحرف على الأقل', 'error');
-  if (newPwd !== confirmPwd) return showMsg('msgPassword', '⚠️ كلمتا المرور غير متطابقتين', 'error');
+  if (newPwd.length < 6) return showMsg('msgPassword', '⚠️ 6 أحرف على الأقل', 'error');
+  if (newPwd !== confirmPwd) return showMsg('msgPassword', '⚠️ غير متطابقتين', 'error');
 
   const btn = event.target;
   btn.disabled = true;
@@ -2857,7 +2619,7 @@ async function changePassword() {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    showMsg('msgPassword', '✅ <b>تم تغيير كلمة المرور بنجاح</b><br><small>🔐 محفوظة بشكل مشفّر (SHA-256)</small>', 'success');
+    showMsg('msgPassword', '✅ تم تغيير كلمة المرور', 'success');
     document.getElementById('newPassword').value = '';
     document.getElementById('confirmPassword').value = '';
 
